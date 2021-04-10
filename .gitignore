@@ -31,3 +31,12 @@ fileIO/
 mesh_environments/
 image_environments/
 
+
+# ROBOTS
+# fetch/
+# iiwa7/
+# jaco7/
+# panda/
+# sawyer/
+# ur5/
+# yumi/
