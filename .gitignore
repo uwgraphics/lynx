@@ -33,10 +33,11 @@ image_environments/
 
 
 # ROBOTS
-# fetch/
-# iiwa7/
-# jaco7/
-# panda/
+fetch/
+iiwa7/
+jaco7/
+panda/
 # sawyer/
 # ur5/
-# yumi/
+yumi/
+hubo/
