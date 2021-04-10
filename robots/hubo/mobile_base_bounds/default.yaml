@@ -1,0 +1,10 @@
+# bounds can either be left as empty brackets or can be filled with two floating point values (lower and upper bounds)
+#    e.g., bounds_x: [-1.0, 1.0]
+#    e.g., bounds_y: [-2.0, 0.0]  (note that 0.0 is inputted as floating point number with a decimal rather than just 0) 
+# all rotation bounds should be specified in radians. 
+bounds_x: [-10., 10.]
+bounds_y: [-10., 10.]
+bounds_z: [-10., 10.]
+bounds_rx: [-3.14, 3.14]
+bounds_ry: [-3.14, 3.14]
+bounds_rz: [-3.14, 3.14]
