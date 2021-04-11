@@ -21,7 +21,7 @@ robots/
 fileIO/
 
 # ENVIRONMENT ASSETS
-# mesh_environments/
+mesh_environments/
 # image_environments/
 
 *.png
@@ -29,3 +29,5 @@ fileIO/
 *.obj
 numeric_image.txt
 # base_meshes/
+collision_images
+objective_images
