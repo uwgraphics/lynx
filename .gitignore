@@ -31,8 +31,8 @@ fileIO/
 
 
 # ENVIRONMENT ASSETS
-mesh_environments/
-image_environments/
+# mesh_environments/
+# image_environments/
 
 
 # ROBOTS
