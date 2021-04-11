@@ -22,7 +22,7 @@ fileIO/
 
 # ENVIRONMENT ASSETS
 mesh_environments/
-# image_environments/
+image_environments/
 
 *.png
 *.stl
