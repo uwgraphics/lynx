@@ -10,7 +10,7 @@ fn main() -> Result<(), String> {
     let sampler = FreeSpaceSampler::new(base_sampler.clone(), collision_checker.clone());
     let samples = sampler.lynx_multi_float_vec_sampler_sample(&mut lynx_vars, 200, 1000, false)?;
 
-    println!("{:?}", samples);
+    println!("{:?}", samples.len());
 
     output_dvec_path_to_file(&samples, "sprint", "hubo", "test");
 
