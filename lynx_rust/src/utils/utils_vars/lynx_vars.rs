@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use crate::utils::utils_collisions::collision_environment::CollisionEnvironment;
 use crate::robot_modules::{robot_world::RobotWorld, robot_module_toolbox::RobotModuleToolbox};
 use crate::utils::utils_image_environments::image_environment::ImageEnvironment;
-use crate::utils::utils_robot_objective_specification::{link_kinematic_objective_specification::*};
 use crate::robot_modules::robot_fk_module::*;
 use crate::utils::utils_collisions::collision_object_utils::*;
 use nalgebra::{DVector};

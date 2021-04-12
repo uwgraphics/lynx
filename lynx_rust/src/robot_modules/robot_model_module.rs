@@ -2,9 +2,10 @@ use crate::robot_modules::{joint::*, link::*};
 use crate::utils::utils_parsing::{urdf_parsing_utils::*};
 use crate::utils::utils_parsing::urdf_link::URDFLink;
 use crate::utils::utils_parsing::urdf_joint::URDFJoint;
-use std::collections::HashMap;
 use crate::utils::utils_files_and_strings::{file_utils::*, robot_folder_utils::*};
+use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
+use termion::{color, style};
 
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -153,8 +154,9 @@ impl RobotModelModule {
     pub fn print_link_order(&self) {
         let num_links = self.links.len();
         for i in 0..num_links {
-            println!("{}: {} --- active: {}", i, self.links[i].name, self.links[i].active);
+            println!("{}{}link {} ---> {} {} --- active: {}", style::Bold, color::Fg(color::Blue), i, style::Reset, self.links[i].name, self.links[i].active);
         }
+        println!();
     }
 
     pub fn get_link_idx_from_name(&self, link_name: &String) -> Option<usize> {

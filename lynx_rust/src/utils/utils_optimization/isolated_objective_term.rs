@@ -3,7 +3,6 @@ use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
 use crate::utils::utils_vars::prelude::*;
 use crate::utils::utils_optimization::loss_function::*;
 use crate::utils::utils_math::nalgebra_utils::{vec_to_dvec, vector3_to_dvec};
-use crate::utils::utils_robot_objective_specification::link_kinematic_objective_specification::{*};
 use crate::utils::utils_se3::transformation_utils::*;
 use crate::utils::utils_collisions::collision_object_utils::*;
 use crate::robot_modules::robot_core_collision_module::LinkGeometryType;

@@ -19,17 +19,18 @@ impl IntersectCheckMultipleResult {
                 println!("Intersection Found");
                 c._stopwatch.print_summary();
                 for i in 0..c._intersection_names.len() {
-                    println!("{:?} ---> {:?}, {:?} stopped at first detected: {:?}", i, c._intersection_names[i], c._intersection_idxs[i], c._stopped_at_first_detected);
+                    println!("collision {:?} ---> {:?}, {:?} stopped at first detected: {:?}", i, c._intersection_names[i], c._intersection_idxs[i], c._stopped_at_first_detected);
                 }
             },
             IntersectCheckMultipleResult::NoIntersectionsFound(c) => {
                 println!("Intersection Not Found");
                 c._stopwatch.print_summary();
                 for i in 0..c._intersection_names.len() {
-                    println!("{:?} ---> {:?}, {:?}", i, c._intersection_names[i], c._intersection_idxs[i]);
+                    println!("collision {:?} ---> {:?}, {:?}", i, c._intersection_names[i], c._intersection_idxs[i]);
                 }
             }
         }
+        println!();
     }
 
     pub fn get_intersect_check_multiple_info_ref(&self) -> &IntersectionCheckMultipleInfo {
@@ -38,6 +39,13 @@ impl IntersectCheckMultipleResult {
             IntersectCheckMultipleResult::NoIntersectionsFound(info) => return info
         }
     }
+
+    pub fn is_in_collision(&self) -> bool {
+            return match self {
+                IntersectCheckMultipleResult::NoIntersectionsFound(_) => { false }
+                IntersectCheckMultipleResult::IntersectionFound(_) => { true }
+            }
+        }
 }
 
 #[derive(Debug, Clone)]
@@ -168,17 +176,18 @@ impl DistanceCheckMultipleResult {
                 println!("Intersection Found");
                 c._stopwatch.print_summary();
                 for i in 0..c._distance_check_names.len() {
-                    println!("{:?} ---> {:?}, {:?}, {:?}, {:?}", i, c._distance_check_names[i], c._distance_check_idxs[i], c._distance_check_distance_ratio_with_respect_to_average[i], c._distance_check_distances[i]);
+                    println!("pair {:?} ---> {:?}, {:?}, {:?}, {:?}", i, c._distance_check_names[i], c._distance_check_idxs[i], c._distance_check_distance_ratio_with_respect_to_average[i], c._distance_check_distances[i]);
                 }
             },
             DistanceCheckMultipleResult::NoIntersectionsFound(c) => {
                 println!("Intersection Not Found");
                 c._stopwatch.print_summary();
                 for i in 0..c._distance_check_names.len() {
-                    println!("{:?} ---> {:?}, {:?}, {:?}, {:?}", i, c._distance_check_names[i], c._distance_check_idxs[i], c._distance_check_distance_ratio_with_respect_to_average[i], c._distance_check_distances[i]);
+                    println!("pair {:?} ---> {:?}, {:?}, {:?}, {:?}", i, c._distance_check_names[i], c._distance_check_idxs[i], c._distance_check_distance_ratio_with_respect_to_average[i], c._distance_check_distances[i]);
                 }
             }
         }
+        println!();
     }
 
     pub fn get_closest_n_distance_idxs(&self, n: usize, maximum_distance: f64) -> Vec< [ [usize; 2]; 2 ] > {
@@ -195,6 +204,12 @@ impl DistanceCheckMultipleResult {
         }
     }
 
+    pub fn is_in_collision(&self) -> bool {
+        return match self {
+            DistanceCheckMultipleResult::NoIntersectionsFound(_) => { false }
+            DistanceCheckMultipleResult::IntersectionFound(_) => { true }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -392,6 +407,13 @@ impl ContactCheckMultipleResult {
         match self {
             ContactCheckMultipleResult::IntersectionFound(info) => return info,
             ContactCheckMultipleResult::NoIntersectionsFound(info) => return info
+        }
+    }
+
+    pub fn is_in_collision(&self) -> bool {
+        return match self {
+            ContactCheckMultipleResult::NoIntersectionsFound(_) => { false }
+            ContactCheckMultipleResult::IntersectionFound(_) => { true }
         }
     }
 }

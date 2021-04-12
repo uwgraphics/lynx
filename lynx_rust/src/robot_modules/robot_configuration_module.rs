@@ -111,8 +111,9 @@ impl RobotConfigurationModule {
 
         let y = get_yaml_obj(fp)?;
         if y.len() == 0 {
-            println!("{}{}WARNING: {} is not a valid configuration name for robot {}  Defaulting to base configuration.{}", color::Fg(color::Yellow), style::Bold, configuration_name, robot_name, style::Reset);
-            return Ok(Self::new_manual_inputs(robot_name, "baseconfig", dead_end_link_names, inactive_joint_names, mobile_base_mode));
+            println!("{}{}ERROR: {} is not a valid configuration name for robot {}.{}", color::Fg(color::Red), style::Bold, configuration_name, robot_name, style::Reset);
+            // return Ok(Self::new_manual_inputs(robot_name, "baseconfig", dead_end_link_names, inactive_joint_names, mobile_base_mode));
+            return Err(format!("{} is not a valid configuration name for robot {}", configuration_name, robot_name));
         }
 
         let y1 = y[0].clone();

@@ -55,8 +55,8 @@ impl CollisionEnvironment {
     fn _load_environment_obbs(&mut self, environment_name: &String) -> Result<(), String> {
         let all_available_environments = self._get_all_available_environment_names();
         if !all_available_environments.contains(environment_name) {
-            println!("{}{}WARNING: environment {} not found as valid environment.  Defaulting to empty environment.  {}", color::Fg(color::Yellow), style::Bold, environment_name, style::Reset);
-            return Ok(());
+            println!("{}{}ERROR: environment {} not found as valid environment. {}", color::Fg(color::Red), style::Bold, environment_name, style::Reset);
+            return Err(format!("environment {} not found as valid environment.", environment_name));
         }
 
         let mesh_filenames = self._get_all_mesh_files_in_particular_environment_directory(environment_name);
