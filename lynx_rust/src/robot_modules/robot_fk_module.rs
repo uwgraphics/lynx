@@ -1,9 +1,9 @@
 use crate::robot_modules::robot_configuration_module::RobotConfigurationModule;
 use crate::robot_modules::robot_dof_module::RobotDOFModule;
 use crate::utils::utils_se3::implicit_dual_quaternion::ImplicitDualQuaternion;
+use crate::utils::utils_math::nalgebra_utils::*;
 use crate::robot_modules::{joint::Joint, link::Link};
 use nalgebra::{DVector, UnitQuaternion, Vector3, Unit};
-use crate::utils::utils_math::nalgebra_utils::*;
 use termion::{color, style};
 
 #[derive(Clone)]
@@ -173,10 +173,19 @@ impl RobotFKModule {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn print_results_next_to_link_names(&self, res: &RobotFKResult, robot_configuration_module: &RobotConfigurationModule) {
-        println!("fk x config: {:?}", res.get_x_ref().data.as_vec());
+        println!("{}{}fk input state: {} {:?}", style::Bold, color::Fg(color::Blue), style::Reset, res.get_x_ref().data.as_vec());
         let l = robot_configuration_module.robot_model_module.links.len();
         for i in 0..l {
-            println!("   {:?} {:?}: {:?}", i, robot_configuration_module.robot_model_module.links[i].name, res.get_link_frames_ref()[i]);
+            // println!("   {:?} {:?}: {:?}", i, robot_configuration_module.robot_model_module.links[i].name, res.get_link_frames_ref()[i]);
+            print!("{}{}   link {:?} ---> {} {} --- ", style::Bold, color::Fg(color::Blue), i, style::Reset, robot_configuration_module.robot_model_module.links[i].name);
+            if res.get_link_frames_ref()[i].is_none() {
+                print!("{} orientation quaternion: {} None, ", color::Fg(color::LightCyan), style::Reset);
+                print!("{} translation vector: {} None \n", color::Fg(color::LightCyan), style::Reset);
+            } else {
+                let res_u = res.get_link_frames_ref()[i].as_ref().unwrap();
+                print!("{} orientation quaternion: {} {:?}, ", color::Fg(color::LightCyan), style::Reset, res_u.quat.coords.data);
+                print!("{} translation vector: {} {:?} \n", color::Fg(color::LightCyan), style::Reset, res_u.translation.data);
+            }
         }
         println!();
     }

@@ -555,12 +555,38 @@ pub mod prelude;
 #[cfg(test)]
 mod tests {
     #[test]
-    fn ur5_num_dof_test() {
+    fn ur5_num_dof_test() -> Result<(), String> {
         use crate::robot_modules::prelude::*;
-        let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None);
-        assert!(robot_module_toolbox.is_ok());
+        let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
 
-        let robot_module_toolbox_unwrap = robot_module_toolbox.as_ref().ok().unwrap();
-        assert_eq!(robot_module_toolbox_unwrap.get_dof_module_ref().get_num_dofs(), 6);
+        assert_eq!(robot_module_toolbox.get_dof_module_ref().get_num_dofs(), 6);
+
+        Ok(())
+    }
+
+    #[test]
+    fn ur5_fk_test() -> Result<(), String> {
+        use crate::robot_modules::prelude::*;
+        use nalgebra::{Vector3, UnitQuaternion, Quaternion};
+
+        let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
+        robot_module_toolbox.get_fk_module_ref().print_results_next_to_link_names(&fk_result, robot_module_toolbox.get_configuration_module_ref());
+
+        let ee_pos = fk_result.get_link_frames_ref()[7].as_ref().unwrap();
+
+        assert_eq!(ee_pos.translation, Vector3::new(0.0, 0.19145, 1.001059));
+        assert_eq!(ee_pos.quat, UnitQuaternion::from_quaternion(Quaternion::new(0.7071067818211393, 0.0, 0.0, 0.7071067805519557)));
+
+        let robot_module_toolbox = RobotModuleToolbox::new("ur5", Some("planar_base"), None)?;
+        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.,1.,0.,0.])?;
+        robot_module_toolbox.get_fk_module_ref().print_results_next_to_link_names(&fk_result, robot_module_toolbox.get_configuration_module_ref());
+
+        let ee_pos = fk_result.get_link_frames_ref()[7].as_ref().unwrap();
+
+        assert_eq!(ee_pos.translation, Vector3::new(1.0, 0.19145, 1.001059));
+        assert_eq!(ee_pos.quat, UnitQuaternion::from_quaternion(Quaternion::new(0.7071067818211393, 0.0, 0.0, 0.7071067805519557)));
+
+        Ok(())
     }
 }
