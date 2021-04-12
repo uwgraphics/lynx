@@ -16,7 +16,7 @@ fn main() -> Result<(), String> {
     // print robot joint position bounds
     robot_module_toolbox.get_bounds_module_ref().print_bounds();
 
-    // print information about salient links.  This is loaded in from robot_salient_links/robot_salient_links.yaml file in robots directory
+    // print information about salient links.  This is loaded in from robot_salient_links/robot_salient_links.yaml file in robots directory.
     robot_module_toolbox.get_salient_links_module_ref().print_summary();
 
     Ok(())
