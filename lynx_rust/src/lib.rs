@@ -549,3 +549,18 @@ pub mod utils;
 pub mod robot_modules;
 pub mod path_planning;
 pub mod prelude;
+
+
+// TESTS
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn ur5_num_dof_test() {
+        use crate::robot_modules::prelude::*;
+        let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None);
+        assert!(robot_module_toolbox.is_ok());
+
+        let robot_module_toolbox_unwrap = robot_module_toolbox.as_ref().ok().unwrap();
+        assert_eq!(robot_module_toolbox_unwrap.get_dof_module_ref().get_num_dofs(), 6);
+    }
+}

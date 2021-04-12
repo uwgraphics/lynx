@@ -44,7 +44,6 @@ impl RobotSalientLinksModule {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn print_summary(&self) {
-        println!();
         let l = self._salient_links.len();
         for i in 0..l {
             print!("{}{}salient link {:?} ---> {}", style::Bold, color::Fg(color::Blue), i, style::Reset);

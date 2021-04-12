@@ -3,14 +3,16 @@ use crate::robot_modules::robot_dof_module::RobotDOFModule;
 use crate::utils::utils_files_and_strings::robot_folder_utils::*;
 use crate::utils::utils_parsing::yaml_parsing_utils::get_yaml_obj;
 use crate::utils::utils_files_and_strings::file_utils::check_if_path_exists;
+use crate::robot_modules::joint::Joint;
+use crate::robot_modules::robot_bounds_module::BoundsCheckResult::{InBounds, OutOfBounds, Error};
+use crate::utils::utils_sampling::prelude::*;
+use crate::utils::utils_vars::prelude::*;
 use nalgebra::{DVector};
 use termion::{color, style};
 use rand::distributions::{Distribution, Uniform};
 use rand::{Rng, SeedableRng};
 use rand::rngs::{ThreadRng, StdRng};
-use crate::robot_modules::robot_bounds_module::BoundsCheckResult::{InBounds, OutOfBounds, Error};
-use crate::utils::utils_sampling::prelude::*;
-use crate::utils::utils_vars::prelude::*;
+
 
 #[derive(Clone)]
 pub struct RobotBoundsModule {
@@ -19,6 +21,7 @@ pub struct RobotBoundsModule {
     _bounds: Vec<(f64, f64)>,
     _robot_name_copy: String,
     _mobile_base_mode_copy: String,
+    _joint_names: Vec<String>,
     _num_dofs: usize
 }
 
@@ -30,11 +33,13 @@ impl RobotBoundsModule {
         let _robot_name_copy = robot_configuration_module.robot_model_module.robot_name.clone();
         let _mobile_base_mode_copy = robot_configuration_module.mobile_base_mode.clone();
         let _num_dofs = robot_dof_module.get_num_dofs();
+        let _joint_names = Vec::new();
 
-        let mut out_self = Self { _upper_bounds: upper_bounds, _lower_bounds: lower_bounds, _bounds: bounds, _robot_name_copy, _mobile_base_mode_copy, _num_dofs };
+        let mut out_self = Self { _upper_bounds: upper_bounds, _lower_bounds: lower_bounds, _bounds: bounds, _robot_name_copy, _mobile_base_mode_copy, _joint_names, _num_dofs };
 
         out_self._create_mobile_base_bounds_folder_and_default_file_if_need_be(robot_configuration_module);
         out_self._set_bounds(robot_configuration_module, robot_dof_module);
+        out_self._set_joint_names(robot_configuration_module);
         out_self.set_bounds_for_mobile_base_from_file(mobile_base_bounds_filename);
 
         return out_self;
@@ -56,6 +61,12 @@ impl RobotBoundsModule {
             self._upper_bounds.push( upper_bound );
             self._lower_bounds.push( lower_bound );
             self._bounds.push( (lower_bound, upper_bound) )
+        }
+    }
+
+    fn _set_joint_names(&mut self, robot_configuration_module: &RobotConfigurationModule) {
+        for j in &robot_configuration_module.robot_model_module.joints {
+            self._joint_names.push( j.name.clone() );
         }
     }
 
@@ -277,6 +288,16 @@ impl RobotBoundsModule {
     }
 
     pub fn get_bounds(&self) -> &Vec<(f64, f64)> { return &self._bounds; }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    pub fn print_bounds(&self) {
+        let l = self._bounds.len();
+        for i in 0..l {
+            println!("{}{}joint dof {} ---> {} {} has lower bound {:?} and upper bound {:?}", style::Bold, color::Fg(color::Blue), i, style::Reset, self._joint_names[i], self._bounds[i].0, self._bounds[i].1);
+        }
+        println!()
+    }
 
 }
 

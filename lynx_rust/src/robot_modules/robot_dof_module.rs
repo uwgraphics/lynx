@@ -1,7 +1,8 @@
 use crate::robot_modules::robot_configuration_module::RobotConfigurationModule;
 use crate::robot_modules::joint::Joint;
-use nalgebra::{DVector, UnitQuaternion, Vector3, Unit};
 use crate::utils::utils_math::nalgebra_utils::*;
+use nalgebra::{DVector, UnitQuaternion, Vector3, Unit};
+use termion::{style, color};
 
 /*
 all about mapping an input vector x to the right DOFs on the right joints
@@ -125,7 +126,7 @@ impl RobotDOFModule {
             } else {
                 axis = self._joints_copy[res.0].dof_translation_axes[ res.2 ].clone();
             }
-            println!("{} {} ({} sub-joint axis local [{}, {}, {}])", i, self._joints_copy[res.0].name, res.1, axis[0], axis[1], axis[2]);
+            println!("{}{}joint dof {} ---> {}{} ({} sub-joint axis local [{}, {}, {}])", style::Bold, color::Fg(color::Blue), i, style::Reset, self._joints_copy[res.0].name, res.1, axis[0], axis[1], axis[2]);
         }
         println!();
     }
@@ -140,7 +141,7 @@ impl RobotDOFModule {
             } else {
                 axis = self._joints_copy[res.0].dof_translation_axes[ res.2 ].clone();
             }
-            println!("{} {} ({} sub-joint axis local [{}, {}, {}]) --> {}", i, self._joints_copy[res.0].name, res.1, axis[0], axis[1], axis[2], x[i]);
+            println!("{}{}joint dof {} ---> {}{} ({} sub-joint axis local [{}, {}, {}]) --> {}", style::Bold, color::Fg(color::Blue), i, style::Reset,self._joints_copy[res.0].name, res.1, axis[0], axis[1], axis[2], x[i]);
         }
         println!();
     }
