@@ -25,9 +25,9 @@ jobs:
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1
-        continue-on-error: true  # WARNING: only for this example, remove it!
         with:
           command: check
+          args: --manifest-path lynx_rust/Cargo.toml
 
   test:
     name: Test Suite
@@ -45,8 +45,9 @@ jobs:
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
-        continue-on-error: true  # WARNING: only for this example, remove it!
         with:
           command: test
+          args: --manifest-path lynx_rust/Cargo.toml
+
 
 
