@@ -589,4 +589,72 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn ur5_self_intersect_test() -> Result<(), String> {
+        use crate::robot_modules::prelude::*;
+        use nalgebra::{Vector3, UnitQuaternion, Quaternion};
+
+        // load default robot module toolbox
+        let mut robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+
+        // compute forward kinematics using the fk_module
+        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
+
+        // do self intersection test
+        let self_intersect_result = robot_module_toolbox.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+
+        // print summary of result, should be Intersection Not Found
+        self_intersect_result.print_summary();
+        assert_eq!(self_intersect_result.is_in_collision(), false);
+
+
+        // compute forward kinematics using the fk_module
+        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,3.,0.,0.,0.])?;
+
+        // do self intersection test
+        let self_intersect_result = robot_module_toolbox.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+
+        // print summary of result, should be Intersection Found between "base_link" and "wrist_2_link"
+        self_intersect_result.print_summary();
+        assert_eq!(self_intersect_result.is_in_collision(), true);
+
+
+        Ok(())
+    }
+
+    #[test]
+    fn ur5_environment_intersect_test() -> Result<(), String> {
+        use crate::robot_modules::prelude::*;
+        use nalgebra::{Vector3, UnitQuaternion, Quaternion};
+
+        // load robot world with environment "single_box" (included in assets/mesh_environments)
+        let mut robot_world = RobotWorld::new("ur5", None, None, Some("single_box"))?;
+
+        // compute forward kinematics using the fk_module
+        let fk_result = robot_world.get_robot_module_toolbox_ref().get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
+
+        // do environment intersection test
+        let environment_intersect_result = robot_world.environment_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+
+        // print summary of result, should be Intersection Not Found
+        environment_intersect_result.print_summary();
+        assert_eq!(environment_intersect_result.is_in_collision(), false);
+
+
+
+        // compute forward kinematics using the fk_module
+        let fk_result = robot_world.get_robot_module_toolbox_ref().get_fk_module_ref().compute_fk_vec(&vec![1.57,0.,-1.57,0.,0.,0.])?;
+
+        // do environment intersection test
+        let environment_intersect_result = robot_world.environment_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+
+        // print summary of result, should be Intersection Found between "box_0" and "forearm_link"
+        environment_intersect_result.print_summary();
+        assert_eq!(environment_intersect_result.is_in_collision(), true);
+
+
+
+        Ok(())
+    }
 }

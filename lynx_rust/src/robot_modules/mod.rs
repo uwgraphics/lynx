@@ -6,7 +6,6 @@ pub mod robot_fk_module;
 pub mod robot_dof_module;
 pub mod robot_bounds_module;
 pub mod robot_module_toolbox;
-pub mod robot_core_collision_module_;
 pub mod robot_core_collision_module;
 pub mod robot_triangle_mesh_collision_module;
 pub mod robot_core_collision_parallel_module;
