@@ -11,8 +11,8 @@ name: Continuous Integration
 jobs:
   check:
     defaults:
-       run:
-          working-directory: ./lynx_rust
+      run:
+        working-directory: lynx_rust
     name: Check
     runs-on: ubuntu-latest
     steps:
@@ -28,10 +28,12 @@ jobs:
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1
-        with:
-          command: check
+      - run: cargo check
 
   test:
+    defaults:
+      run:
+        working-directory: lynx_rust
     name: Test Suite
     runs-on: ubuntu-latest
     steps:
@@ -47,8 +49,7 @@ jobs:
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: cargo test --lib
 
 
 

@@ -29,9 +29,9 @@ assets/mesh_environments/*
 !assets/mesh_environments/single_box
 image_environments/
 
-*.png
-*.stl
-*.obj
+# *.png
+# *.stl
+# *.obj
 numeric_image.txt
 collision_images
 objective_images
