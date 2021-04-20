@@ -29,7 +29,11 @@ kdtree = "0.6.0"
 image = "0.23.14"
 imageproc = "0.22.0"
 thread-id = "3.3.0"
-time = "0.2.25"
+bevy = "0.5"
+bevy_mod_picking = "0.4"
+bevy_stl = {version="0.3.0", features = ["wireframe"]}
+bevy_obj = "0.5.0"
+bevy_egui = "0.4.0"
 
 [lib]
 name = "lynx_lib"

@@ -97,6 +97,7 @@ impl CollisionChecker for SphereCollisionChecker {
 }
 impl LynxVarsUser for SphereCollisionChecker { }
 
+/*
 #[derive(Clone)]
 pub struct RobotWorldCollisionChecker;
 impl CollisionChecker for RobotWorldCollisionChecker {
@@ -146,6 +147,7 @@ impl LynxVarsUser for RobotWorldCollisionChecker {
         return vec![ ("RobotWorld", "robot_world") ];
     }
 }
+*/
 
 #[derive(Clone)]
 pub struct ImageEnvironmentCollisionChecker {

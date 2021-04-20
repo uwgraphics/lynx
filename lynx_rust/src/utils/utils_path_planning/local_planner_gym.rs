@@ -11,6 +11,7 @@ use std::time::{Instant, Duration};
 use termion::{color, style};
 use crate::utils::utils_path_planning::path_planner_result::PathPlannerResult;
 
+/*
 pub struct LocalPlannerGym<'a> {
     _lynx_vars_parallel: LynxVarsGeneric<'a>,
     _lynx_vars_single_threaded: LynxVarsGeneric<'a>,
@@ -215,3 +216,5 @@ impl<'a> LocalPlannerGym<'a> {
     }
 
 }
+
+ */

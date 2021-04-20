@@ -6,6 +6,7 @@ use ncollide3d::query::{Proximity, PointQuery, Contact, Ray, RayCast, PointProje
 use std::time::{Instant, Duration};
 use std::fmt;
 
+
 #[derive(Debug, Clone)]
 pub enum IntersectCheckMultipleResult {
     IntersectionFound(IntersectionCheckMultipleInfo),
@@ -128,7 +129,7 @@ pub fn intersect_check_between_multiple_collision_objects(group1: &Vec<Vec<Colli
     }
 }
 
-pub fn intersect_check_between_multiple_collision_objects_subset(subset_check_idxs: Vec<  [ [usize; 2]; 2 ]  >, group1: &Vec<Vec<CollisionObject>>, group2: &Vec<Vec<CollisionObject>>, stop_at_first_detected: bool, skip_collision_check_tensor: Option<&BoolCollisionCheckTensor>) -> Result<IntersectCheckMultipleResult, String> {
+pub fn intersect_check_between_multiple_collision_objects_subset(subset_check_idxs: &Vec<  [ [usize; 2]; 2 ]  >, group1: &Vec<Vec<CollisionObject>>, group2: &Vec<Vec<CollisionObject>>, stop_at_first_detected: bool, skip_collision_check_tensor: Option<&BoolCollisionCheckTensor>) -> Result<IntersectCheckMultipleResult, String> {
     let check_for_collision_skips = skip_collision_check_tensor.is_some();
     let mut intersections_info = IntersectionCheckMultipleInfo::new(stop_at_first_detected);
 

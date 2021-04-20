@@ -273,7 +273,6 @@ impl TriMeshEngine {
         let mut mesh = Vec::new();
         let l = self.indices.len();
         for i in 0..l {
-            let normal = stl_io::Normal::new([0.,0.,0.]);
             let _v1 = self.vertices[ self.indices[i][0] ].clone();
             let _v2 = self.vertices[ self.indices[i][1] ].clone();
             let _v3 = self.vertices[ self.indices[i][2] ].clone();
@@ -282,7 +281,17 @@ impl TriMeshEngine {
             let v2 = stl_io::Vertex::new( [_v2[0] as f32, _v2[1] as f32, _v2[2] as f32]  );
             let v3 = stl_io::Vertex::new( [_v3[0] as f32, _v3[1] as f32, _v3[2] as f32]  );
 
-            let triangle = stl_io::Triangle{ normal: normal, vertices: [v1, v2, v3] };
+            let v1_n = Vector3::new( _v1[0], _v1[1], _v1[2] );
+            let v2_n = Vector3::new( _v2[0], _v2[1], _v2[2] );
+            let v3_n = Vector3::new( _v3[0], _v3[1], _v3[2] );
+
+            let a = &v2_n - &v1_n;
+            let b = &v3_n - &v2_n;
+            let n = a.cross(&b);
+
+            let normal = stl_io::Normal::new([n[0] as f32, n[1] as f32, n[2] as f32]);
+
+            let triangle = stl_io::Triangle{ normal, vertices: [v1, v2, v3] };
             mesh.push(triangle);
         }
 
@@ -301,15 +310,47 @@ impl TriMeshEngine {
         }
         let mut out_file =  OpenOptions::new().write(true).create(true).open(out_fp.clone()).unwrap();
 
+        let mut out_verts = Vec::new();
+        let mut out_face_vertex_idxs = Vec::new();
+        let mut out_normals = Vec::new();
+        let mut out_face_normal_idxs = Vec::new();
+
         let l = self.vertices.len();
         for i in 0..l {
             let out_str = format!("v {} {} {}\n", self.vertices[i][0], self.vertices[i][1], self.vertices[i][2]);
             out_file.write(out_str.as_bytes());
+            out_verts.push( (self.vertices[i][0], self.vertices[i][1], self.vertices[i][2]) );
         }
 
         let l = self.indices.len();
         for i in 0..l {
-            let out_str = format!("f {} {} {}\n", self.indices[i][0]+1, self.indices[i][1]+1, self.indices[i][2]+1);
+            out_face_vertex_idxs.push( (self.indices[i][0]+1, self.indices[i][1]+1, self.indices[i][2]+1) );
+
+            let _v1 = self.vertices[ self.indices[i][0] ].clone();
+            let _v2 = self.vertices[ self.indices[i][1] ].clone();
+            let _v3 = self.vertices[ self.indices[i][2] ].clone();
+
+            let v1_n = Vector3::new( _v1[0], _v1[1], _v1[2] );
+            let v2_n = Vector3::new( _v2[0], _v2[1], _v2[2] );
+            let v3_n = Vector3::new( _v3[0], _v3[1], _v3[2] );
+
+            let a = &v2_n - &v1_n;
+            let b = &v3_n - &v2_n;
+            let n = a.cross(&b);
+
+            out_normals.push( (n[0], n[1], n[2]) );
+            out_face_normal_idxs.push( out_normals.len() );
+        }
+
+        let l = out_normals.len();
+        for i in 0..l {
+            let out_str = format!("vn {} {} {}\n", out_normals[i].0, out_normals[i].1, out_normals[i].2);
+            out_file.write(out_str.as_bytes());
+        }
+
+        let l = out_face_vertex_idxs.len();
+        for i in 0..l {
+            let out_str = format!("f {}//{} {}//{} {}//{}\n", self.indices[i][0]+1, out_face_normal_idxs[i], self.indices[i][1]+1, out_face_normal_idxs[i], self.indices[i][2]+1, out_face_normal_idxs[i]);
             out_file.write(out_str.as_bytes());
         }
     }

@@ -2,10 +2,11 @@ use crate::robot_modules::robot_model_module::RobotModelModule;
 use crate::utils::utils_files_and_strings::robot_folder_utils::*;
 use crate::utils::utils_files_and_strings::file_utils::*;
 use crate::utils::utils_parsing::yaml_parsing_utils::*;
+use crate::utils::utils_se3::prelude::ImplicitDualQuaternion;
 use serde::{Serialize, Deserialize};
 use termion::{color, style};
 use crate::robot_modules::{link::Link, joint::Joint};
-use nalgebra::{Vector3};
+use nalgebra::{Vector3, UnitQuaternion};
 use std::collections::HashMap;
 
 /*
@@ -29,6 +30,7 @@ Mobile base mode: string that specifies the mode of the base.  Options are:
 pub struct  RobotConfigurationModule {
     pub configuration_name: String,
     pub robot_model_module: RobotModelModule,
+    pub base_offset: ImplicitDualQuaternion,
     pub dead_end_link_names: Vec<String>,
     pub inactive_joint_names: Vec<String>,
     pub mobile_base_mode: String, // static, floating, planar_translation, planar_rotation, planar_translation_and_rotation
@@ -84,14 +86,14 @@ impl RobotConfigurationModule {
         let configuration_name = "baseconfig";
         let dead_end_link_names = Vec::new();
         let inactive_joint_names = Vec::new();
-        Self::new_manual_inputs(robot_name, configuration_name, dead_end_link_names, inactive_joint_names, "static".to_string())
+        Self::new_manual_inputs(robot_name, configuration_name, ImplicitDualQuaternion::new_identity(), dead_end_link_names, inactive_joint_names, "static".to_string())
     }
 
-    pub fn new_manual_inputs(robot_name: &str, configuration_name: &str, dead_end_link_names: Vec<String>, inactive_joint_names: Vec<String>, mobile_base_mode: String) -> Self {
+    pub fn new_manual_inputs(robot_name: &str, configuration_name: &str, base_offset: ImplicitDualQuaternion, dead_end_link_names: Vec<String>, inactive_joint_names: Vec<String>, mobile_base_mode: String) -> Self {
         let robot_model_module = RobotModelModule::new(robot_name);
         let all_inactive_links = Vec::new();
 
-        let mut out_self = Self { configuration_name: configuration_name.to_string(), robot_model_module,
+        let mut out_self = Self { configuration_name: configuration_name.to_string(), robot_model_module, base_offset,
             dead_end_link_names, inactive_joint_names, mobile_base_mode, all_inactive_links};
 
         out_self._adjust_model_module_based_on_mobile_base_mode();
@@ -131,7 +133,32 @@ impl RobotConfigurationModule {
 
         mobile_base_mode = y1["mobile_base_mode"].as_str().unwrap().to_string();
 
-        return Ok(Self::new_manual_inputs(robot_name, configuration_name, dead_end_link_names, inactive_joint_names, mobile_base_mode));
+        let mut base_offset = ImplicitDualQuaternion::new_identity();
+
+        let mut base_posiition_offset_vec3 = Vector3::new(0.,0.,0.);
+        let base_position_offset = y1["base_position_offset"].as_vec().unwrap();
+        if base_position_offset.len() != 3 {
+            return Err(format!("base_position_offset ({:?}) must be a float vec of length 3", base_position_offset));
+        }
+        for i in 0..3 {
+            base_posiition_offset_vec3[i] = base_position_offset[i].as_f64().expect("base_position_offset has a value that is not f64.");
+        }
+        base_offset.translation = base_posiition_offset_vec3;
+        base_offset.set_is_identity();
+
+        let mut euler_angles = [0.,0.,0.];
+        let base_orientation_offset = y1["base_orientation_offset"].as_vec().unwrap();
+        if base_orientation_offset.len() != 3 {
+            return Err(format!("base_orientation_offset ({:?}) must be a float vec of length 3", base_orientation_offset));
+        }
+        for i in 0..3 {
+            euler_angles[i] = base_orientation_offset[i].as_f64().expect("base_orientation_offset has a value that is not f64.");
+        }
+        let mut q: UnitQuaternion<f64> = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
+        base_offset.quat = q;
+        base_offset.set_is_identity();
+
+        return Ok(Self::new_manual_inputs(robot_name, configuration_name, base_offset, dead_end_link_names, inactive_joint_names, mobile_base_mode));
     }
 
     fn _create_configuration_directory_with_example_if_need_be(robot_name: String) {
@@ -142,10 +169,16 @@ impl RobotConfigurationModule {
         out_string += "# dead_end_links: [\"dead_end_link_1\"] \n";
         out_string += "# inactive_joints: [\"inactive_joint_1\", \"inactive_joint_2\"] \n";
         out_string += "# mobile_base_mode: \"static\" \n";
-        out_string += "#    ^^(can be static, floating, translation, rotation, planar_translation, planar_rotation, planar_translation_and_rotation)\n\n";
+        out_string += "#    ^^(can be static, floating, translation, rotation, planar_translation, planar_rotation, planar_translation_and_rotation)\n";
+        out_string += "# base_position_offset: [0., 0., 0.] \n";
+        out_string += "#    ^^(represented in meters)\n";
+        out_string += "# base_orientation_offset: [0., 0., 0.] \n";
+        out_string += "#    ^^(Euler angles, represented in radians)\n\n";
         out_string += "dead_end_links: [] \n";
         out_string += "inactive_joints: [] \n";
-        out_string += "mobile_base_mode: \"static\" ";
+        out_string += "mobile_base_mode: \"static\" \n";
+        out_string += "base_position_offset: [0., 0., 0.]\n";
+        out_string += "base_orientation_offset: [0., 0., 0.]\n";
 
         let partial_fp = "configurations".to_string();
         write_string_to_file_relative_to_robot_directory(robot_name.clone(), partial_fp.clone(), "sample_config.yaml".to_string(), out_string, true);

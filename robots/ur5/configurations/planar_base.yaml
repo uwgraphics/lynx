@@ -5,7 +5,13 @@
 # inactive_joints: ["inactive_joint_1", "inactive_joint_2"] 
 # mobile_base_mode: "static" 
 #    ^^(can be static, floating, translation, rotation, planar_translation, planar_rotation, planar_translation_and_rotation)
+# base_position_offset: [0., 0., 0.] 
+#    ^^(represented in meters)
+# base_orientation_offset: [0., 0., 0.] 
+#    ^^(Euler angles, represented in radians)
 
 dead_end_links: [] 
 inactive_joints: [] 
 mobile_base_mode: "planar_translation_and_rotation" 
+base_position_offset: [0., 0., 0.]
+base_orientation_offset: [0., 0., 0.]

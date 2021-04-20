@@ -4,7 +4,7 @@ use nalgebra::{Vector3, UnitQuaternion, Quaternion};
 
 fn main() -> Result<(), String> {
     // load default robot module toolbox
-    let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+    let robot_module_toolbox = RobotModuleToolbox::new_lite("ur5", None, None)?;
 
     // compute forward kinematics using the fk_module
     let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
@@ -23,7 +23,7 @@ fn main() -> Result<(), String> {
 
 
     // load robot module toolbox with mobile base
-    let robot_module_toolbox = RobotModuleToolbox::new("ur5", Some("planar_base"), None)?;
+    let robot_module_toolbox = RobotModuleToolbox::new_lite("ur5", Some("planar_base"), None)?;
 
     // compute forward kinematics using the fk_module, moving the mobile base 1 meter forward on the x axis
     let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.,1.,0.,0.])?;

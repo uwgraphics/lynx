@@ -20,14 +20,14 @@ impl<'a> LynxVarsGeneric<'a> {
     }
 
     pub fn new_empty_single_threaded_packaged_with_robot_module_toolbox(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
-        let robot_module_toolbox = RobotModuleToolbox::new(robot_name, configuration_name, mobile_base_bounds_filename)?;
+        let robot_module_toolbox = RobotModuleToolbox::new_lite(robot_name, configuration_name, mobile_base_bounds_filename)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_single_threaded();
         set_or_add_lynx_var_generic!(&mut lynx_vars, RobotModuleToolbox, "robot_module_toolbox", robot_module_toolbox);
         return Ok(lynx_vars);
     }
 
     pub fn new_empty_parallel_packaged_with_robot_module_toolbox(num_threads: Option<usize>, robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
-        let robot_module_toolbox = RobotModuleToolbox::new(robot_name, configuration_name, mobile_base_bounds_filename)?;
+        let robot_module_toolbox = RobotModuleToolbox::new_lite(robot_name, configuration_name, mobile_base_bounds_filename)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_parallel(num_threads);
         set_or_add_lynx_var_generic!(&mut lynx_vars, RobotModuleToolbox, "robot_module_toolbox", robot_module_toolbox);
         return Ok(lynx_vars);

@@ -26,7 +26,7 @@ pub struct RobotModuleToolbox {
 }
 
 impl RobotModuleToolbox {
-    pub fn new( robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
+    pub fn new_lite(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
         let _robot_configuration_module = RobotConfigurationModule::new(robot_name, configuration_name)?;
         let _robot_dof_module = RobotDOFModule::new(&_robot_configuration_module);
         let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module, mobile_base_bounds_filename);
@@ -36,6 +36,21 @@ impl RobotModuleToolbox {
 
         return Ok( Self { _robot_configuration_module, _robot_dof_module, _robot_bounds_module, _robot_fk_module,
             _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
+    }
+
+    pub fn new_all(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
+        let _robot_configuration_module = RobotConfigurationModule::new(robot_name, configuration_name)?;
+        let _robot_dof_module = RobotDOFModule::new(&_robot_configuration_module);
+        let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module, mobile_base_bounds_filename);
+        let _robot_fk_module = RobotFKModule::new(&_robot_configuration_module, &_robot_dof_module);
+        let _robot_salient_links_module = RobotSalientLinksModule::new(&_robot_configuration_module);
+        let _robot_core_collision_module = RobotCoreCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
+
+        // extra initializations...
+        let _robot_triangle_mesh_collision_module = RobotTriangleMeshCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
+
+        return Ok( Self { _robot_configuration_module, _robot_dof_module, _robot_bounds_module, _robot_fk_module,
+            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: Some(_robot_triangle_mesh_collision_module) } );
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

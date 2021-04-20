@@ -5,7 +5,7 @@ use lynx_lib::prelude::*;
 fn main() -> Result<(), String> {
 
     // load robot module toolbox
-    let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+    let mut robot_module_toolbox = RobotModuleToolbox::new_lite("ur5", None, None)?;
 
     // print link order
     robot_module_toolbox.get_configuration_module_ref().robot_model_module.print_link_order();

@@ -10,6 +10,7 @@ use termion::{color, style};
 pub struct RobotFKModule {
     _predecessor_link_idxs: Vec<usize>,
     _predecessor_joint_idxs: Vec<usize>,
+    _base_offset: ImplicitDualQuaternion,
     _num_links: usize,
     _link_tree_traversal_layers_copy: Vec<Vec<usize>>,
     _links_copy: Vec<Link>,
@@ -23,6 +24,7 @@ impl RobotFKModule {
     pub fn new(robot_configuration_module: &RobotConfigurationModule, robot_dof_module: &RobotDOFModule) -> Self {
         let _predecessor_link_idxs = Vec::new();
         let _predecessor_joint_idxs = Vec::new();
+        let _base_offset = robot_configuration_module.base_offset.clone();
         let _num_links = robot_configuration_module.robot_model_module.links.len();
         let _link_tree_traversal_layers_copy = robot_configuration_module.robot_model_module.link_tree_traversal_layers.clone();
         let _links_copy = robot_configuration_module.robot_model_module.links.clone();
@@ -35,7 +37,7 @@ impl RobotFKModule {
         _default_starting_out_vec[world_idx] = Some(ImplicitDualQuaternion::new_identity());
 
         let mut out_self = Self { _predecessor_link_idxs,
-            _predecessor_joint_idxs, _num_links, _link_tree_traversal_layers_copy, _links_copy,
+            _predecessor_joint_idxs, _base_offset, _num_links, _link_tree_traversal_layers_copy, _links_copy,
             _joints_copy, _num_dofs, _joint_idx_to_input_x_start_idx_copy, _default_starting_out_vec };
 
         out_self._set_predecessor_links_and_joints(robot_configuration_module);
@@ -71,12 +73,13 @@ impl RobotFKModule {
         if num_layers == 1 { return Ok( RobotFKResult::new(x, out_vec) ); }
 
         for i in 1..num_layers {
+            let first_layer = i == 1;
             let l = self._link_tree_traversal_layers_copy[i].len();
             for j in 0..l {
                 let curr_link_idx = self._link_tree_traversal_layers_copy[i][j];
                 let predecessor_link_idx = self._predecessor_link_idxs[curr_link_idx];
                 let predecessor_joint_idx = self._predecessor_joint_idxs[curr_link_idx];
-                self._compute_fk_on_single_link(x, curr_link_idx, predecessor_link_idx, predecessor_joint_idx, &mut out_vec);
+                self._compute_fk_on_single_link(x, curr_link_idx, predecessor_link_idx, predecessor_joint_idx, &mut out_vec, first_layer);
             }
         }
 
@@ -121,11 +124,12 @@ impl RobotFKModule {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fn _compute_fk_on_single_link(&self, x: &DVector<f64>, curr_link_idx: usize, predecessor_link_idx: usize, predecessor_joint_idx: usize, out_vec: &mut Vec<Option<ImplicitDualQuaternion>>) {
+    fn _compute_fk_on_single_link(&self, x: &DVector<f64>, curr_link_idx: usize, predecessor_link_idx: usize, predecessor_joint_idx: usize, out_vec: &mut Vec<Option<ImplicitDualQuaternion>>, first_layer: bool) {
         if !self._links_copy[curr_link_idx].active { return; }
 
-
         let mut out_pose = out_vec[predecessor_link_idx].as_ref().unwrap().clone();
+        if first_layer && !self._base_offset.is_identity { out_pose = self._base_offset.clone(); }
+
         if self._joints_copy[predecessor_joint_idx].has_origin_offset {
             out_pose = out_pose.multiply_shortcircuit(  &self._joints_copy[predecessor_joint_idx].origin_offset  );
         }

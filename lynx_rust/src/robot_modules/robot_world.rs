@@ -12,7 +12,7 @@ pub struct RobotWorld {
 
 impl RobotWorld {
     pub fn new(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>, environment_name: Option<&str>) -> Result<Self, String> {
-        let _robot_module_toolbox = RobotModuleToolbox::new(robot_name, configuration_name, mobile_base_bounds_filename)?;
+        let _robot_module_toolbox = RobotModuleToolbox::new_lite(robot_name, configuration_name, mobile_base_bounds_filename)?;
         let mut _collision_environment = None;
         if environment_name.is_some() {
             _collision_environment = Some(CollisionEnvironment::new(environment_name.unwrap())?);

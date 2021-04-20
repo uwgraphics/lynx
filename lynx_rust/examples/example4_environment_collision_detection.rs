@@ -19,7 +19,7 @@ fn main() -> Result<(), String> {
 
 
     // compute forward kinematics using the fk_module
-    let fk_result = robot_world.get_robot_module_toolbox_ref().get_fk_module_ref().compute_fk_vec(&vec![1.57,0.,-1.57,0.,0.,0.])?;
+    let fk_result = robot_world.get_robot_module_toolbox_ref().get_fk_module_ref().compute_fk_vec(&vec![1.57,0.0,-1.57,0.,0.,0.])?;
 
     // do environment intersection test
     let environment_intersect_result = robot_world.environment_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;

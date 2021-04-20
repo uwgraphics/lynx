@@ -77,45 +77,74 @@ impl RobotCoreCollisionModule {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn self_intersect_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<IntersectCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return intersect_check_between_multiple_collision_objects( self._get_link_geometry_vec(&link_geometry_type), self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)));
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return intersect_check_between_multiple_collision_objects(self.get_link_geometry_collision_objects_ref(&link_geometry_type), self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)));
     }
 
     pub fn self_distance_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected_intersection: bool) -> Result<DistanceCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return distance_check_between_multiple_collision_objects( self._get_link_geometry_vec(&link_geometry_type), self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected_intersection, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return distance_check_between_multiple_collision_objects(self.get_link_geometry_collision_objects_ref(&link_geometry_type), self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected_intersection, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
     }
 
     pub fn self_contact_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected_intersection: bool, margin: Option<f64>) -> Result<ContactCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return contact_check_between_multiple_collision_objects( self._get_link_geometry_vec(&link_geometry_type), self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected_intersection, margin, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return contact_check_between_multiple_collision_objects(self.get_link_geometry_collision_objects_ref(&link_geometry_type), self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected_intersection, margin, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
+    }
+
+    pub fn self_intersect_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected_intersection: bool) -> Result<IntersectCheckMultipleResult, String> {
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return intersect_check_between_multiple_collision_objects_subset(subset_check_idxs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected_intersection, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)));
+    }
+
+    pub fn self_distance_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected_intersection: bool) -> Result<DistanceCheckMultipleResult, String> {
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return distance_check_between_multiple_collision_objects_subset(subset_check_idxs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected_intersection, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
     }
 
     pub fn self_contact_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected_intersection: bool, margin: Option<f64>) -> Result<ContactCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return contact_check_between_multiple_collision_objects_subset( subset_check_idxs, self._get_link_geometry_vec(&link_geometry_type), self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected_intersection, margin, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return contact_check_between_multiple_collision_objects_subset(subset_check_idxs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected_intersection, margin, Some(self._get_skip_collision_check_tensor_ref(&link_geometry_type)), Some(self._get_average_distance_tensor_ref(&link_geometry_type)));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn environment_intersect_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, collision_environment: &CollisionEnvironment, stop_at_first_detected: bool) -> Result<IntersectCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return intersect_check_between_multiple_collision_objects( &collision_environment.environment_obbs, self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected, None);
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return intersect_check_between_multiple_collision_objects(&collision_environment.environment_obbs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, None);
     }
 
     pub fn environment_distance_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, collision_environment: &CollisionEnvironment, stop_at_first_detected: bool) -> Result<DistanceCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return distance_check_between_multiple_collision_objects( &collision_environment.environment_obbs, self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected, None, None);
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return distance_check_between_multiple_collision_objects(&collision_environment.environment_obbs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, None, None);
     }
 
     pub fn environment_contact_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, collision_environment: &CollisionEnvironment, stop_at_first_detected: bool, margin: Option<f64>) -> Result<ContactCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return contact_check_between_multiple_collision_objects( &collision_environment.environment_obbs, self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected, margin, None, None);
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return contact_check_between_multiple_collision_objects(&collision_environment.environment_obbs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, margin, None, None);
+    }
+
+    pub fn environment_intersect_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, collision_environment: &CollisionEnvironment, stop_at_first_detected: bool) -> Result<IntersectCheckMultipleResult, String> {
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return intersect_check_between_multiple_collision_objects_subset(subset_check_idxs, &collision_environment.environment_obbs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, None);
+    }
+
+    pub fn environment_distance_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, collision_environment: &CollisionEnvironment, stop_at_first_detected: bool) -> Result<DistanceCheckMultipleResult, String> {
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return distance_check_between_multiple_collision_objects_subset(subset_check_idxs, &collision_environment.environment_obbs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, None, None);
     }
 
     pub fn environment_contact_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, collision_environment: &CollisionEnvironment, stop_at_first_detected: bool, margin: Option<f64>) -> Result<ContactCheckMultipleResult, String> {
-        self._set_poses_on_links(fk_res, &link_geometry_type);
-        return contact_check_between_multiple_collision_objects_subset( subset_check_idxs, &collision_environment.environment_obbs, self._get_link_geometry_vec(&link_geometry_type), stop_at_first_detected, margin, None, None);
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        return contact_check_between_multiple_collision_objects_subset(subset_check_idxs, &collision_environment.environment_obbs, self.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, margin, None, None);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    pub fn other_robot_intersect_check(&mut self, other_robot_core_collision_module: &mut RobotCoreCollisionModule, fk_res: &RobotFKResult, other_fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<IntersectCheckMultipleResult, String> {
+        self.set_poses_on_links(fk_res, &link_geometry_type);
+        other_robot_core_collision_module.set_poses_on_links(other_fk_res, &link_geometry_type);
+
+        return intersect_check_between_multiple_collision_objects(self.get_link_geometry_collision_objects_ref(&link_geometry_type), other_robot_core_collision_module.get_link_geometry_collision_objects_ref(&link_geometry_type), stop_at_first_detected, None);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,8 +185,8 @@ impl RobotCoreCollisionModule {
             match res {
                 IntersectCheckMultipleResult::IntersectionFound(i) => {
                     for idxs in i.get_intersection_idxs() {
-                        let name1 = self._get_link_geometry_vec(&lgt)[idxs[0][0]][idxs[0][1]].name.clone();
-                        let name2 = self._get_link_geometry_vec(&lgt)[idxs[1][0]][idxs[1][1]].name.clone();
+                        let name1 = self.get_link_geometry_collision_objects_ref(&lgt)[idxs[0][0]][idxs[0][1]].name.clone();
+                        let name2 = self.get_link_geometry_collision_objects_ref(&lgt)[idxs[1][0]][idxs[1][1]].name.clone();
                         println!("{}{}Adding [{:?}, {:?}] as skip pair for {:?} model.  {}", color::Fg(color::Blue), style::Bold, name1, name2, lgt, style::Reset);
                         self._get_skip_collision_check_tensor_mut_ref(&lgt).add_skip(idxs[0], idxs[1]);
                     }
@@ -326,8 +355,8 @@ impl RobotCoreCollisionModule {
             return Ok(());
         }
 
-        let mut count_collision_check_tensor = FloatCollisionCheckTensor::new(&self._get_link_geometry_vec(link_geometry_type), &self._get_link_geometry_vec(link_geometry_type));
-        let mut initial_skip_collision_check_tensor = BoolCollisionCheckTensor::new(&self._get_link_geometry_vec(link_geometry_type), &self._get_link_geometry_vec(link_geometry_type), self._get_skip_check_for_self_collision_mode(link_geometry_type));
+        let mut count_collision_check_tensor = FloatCollisionCheckTensor::new(&self.get_link_geometry_collision_objects_ref(link_geometry_type), &self.get_link_geometry_collision_objects_ref(link_geometry_type));
+        let mut initial_skip_collision_check_tensor = BoolCollisionCheckTensor::new(&self.get_link_geometry_collision_objects_ref(link_geometry_type), &self.get_link_geometry_collision_objects_ref(link_geometry_type), self._get_skip_check_for_self_collision_mode(link_geometry_type));
 
         for i in 0..num_samples {
             if i % 100 == 0 {
@@ -336,9 +365,9 @@ impl RobotCoreCollisionModule {
 
             let sample = robot_bounds_module.uniform_sample_from_bounds();
             let fk_res = robot_fk_module.compute_fk(&sample)?;
-            self._set_poses_on_links(&fk_res, link_geometry_type);
+            self.set_poses_on_links(&fk_res, link_geometry_type);
 
-            let intersect_check_multiple_result = intersect_check_between_multiple_collision_objects(&self._get_link_geometry_vec(link_geometry_type), &self._get_link_geometry_vec(link_geometry_type), false, Some(&initial_skip_collision_check_tensor))?;
+            let intersect_check_multiple_result = intersect_check_between_multiple_collision_objects(&self.get_link_geometry_collision_objects_ref(link_geometry_type), &self.get_link_geometry_collision_objects_ref(link_geometry_type), false, Some(&initial_skip_collision_check_tensor))?;
             match intersect_check_multiple_result {
                 IntersectCheckMultipleResult::NoIntersectionsFound(i) => { count_collision_check_tensor.increment_count_at_given_idxs( &vec![ ] ); },
                 IntersectCheckMultipleResult::IntersectionFound(i) => { count_collision_check_tensor.increment_count_at_given_idxs( i.get_intersection_idxs() );  }
@@ -361,7 +390,7 @@ impl RobotCoreCollisionModule {
         }
 
 
-        let mut average_distance_tensor = FloatCollisionCheckTensor::new(&self._get_link_geometry_vec(link_geometry_type), &self._get_link_geometry_vec(link_geometry_type));
+        let mut average_distance_tensor = FloatCollisionCheckTensor::new(&self.get_link_geometry_collision_objects_ref(link_geometry_type), &self.get_link_geometry_collision_objects_ref(link_geometry_type));
 
         for i in 0..num_samples {
             if i % 50 == 0 {
@@ -370,9 +399,9 @@ impl RobotCoreCollisionModule {
 
             let sample = robot_bounds_module.uniform_sample_from_bounds();
             let fk_res = robot_fk_module.compute_fk(&sample)?;
-            self._set_poses_on_links(&fk_res, link_geometry_type);
+            self.set_poses_on_links(&fk_res, link_geometry_type);
 
-            let distance_check_multiple_result = distance_check_between_multiple_collision_objects(&self._get_link_geometry_vec(link_geometry_type), &self._get_link_geometry_vec(link_geometry_type), false, None, None)?;
+            let distance_check_multiple_result = distance_check_between_multiple_collision_objects(&self.get_link_geometry_collision_objects_ref(link_geometry_type), &self.get_link_geometry_collision_objects_ref(link_geometry_type), false, None, None)?;
             match distance_check_multiple_result {
                 DistanceCheckMultipleResult::NoIntersectionsFound(i) => {
                     let l = i.get_distance_check_idxs().len();
@@ -576,7 +605,7 @@ impl RobotCoreCollisionModule {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fn _set_poses_on_links(&mut self, fk_res: &RobotFKResult, link_geometry_type: &LinkGeometryType) {
+    pub fn set_poses_on_links(&mut self, fk_res: &RobotFKResult, link_geometry_type: &LinkGeometryType) {
         match link_geometry_type {
             LinkGeometryType::OBBs => self._set_poses_on_link_obbs(fk_res),
             LinkGeometryType::ConvexShapes => self._set_poses_on_link_convex_shapes(fk_res),
@@ -637,7 +666,7 @@ impl RobotCoreCollisionModule {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fn _get_link_geometry_vec(&self, link_geometry_type: &LinkGeometryType) -> &Vec<Vec<CollisionObject>> {
+    pub fn get_link_geometry_collision_objects_ref(&self, link_geometry_type: &LinkGeometryType) -> &Vec<Vec<CollisionObject>> {
         match link_geometry_type {
             LinkGeometryType::OBBs => return &self._link_obbs,
             LinkGeometryType::ConvexShapes => return &self._link_convex_shapes,
@@ -645,6 +674,8 @@ impl RobotCoreCollisionModule {
             LinkGeometryType::ConvexShapeSubcomponents => return &self._link_convex_shape_subcomponents
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     fn _get_skip_collision_check_tensor_ref(&self, link_geometry_type: &LinkGeometryType) -> &BoolCollisionCheckTensor {
         match link_geometry_type {
@@ -781,7 +812,7 @@ impl RobotCoreCollisionModule {
 
     pub fn print_collision_check_skips(&self, link_geometry_type: LinkGeometryType) -> Result<(), String> {
         let collision_check_skip_tensor = self._get_skip_collision_check_tensor_ref(&link_geometry_type);
-        let link_geometry_vec = self._get_link_geometry_vec(&link_geometry_type);
+        let link_geometry_vec = self.get_link_geometry_collision_objects_ref(&link_geometry_type);
 
         let l = link_geometry_vec.len();
         for i in 0..l {
