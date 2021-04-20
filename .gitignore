@@ -36,4 +36,6 @@ numeric_image.txt
 collision_images
 objective_images
 
-app
+# app
+lynx_rust/src/app/*
+!lynx_rust/src/app/mod.rs
