@@ -1,6 +1,5 @@
 use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
-use crate::utils::utils_collisions::collision_environment::CollisionEnvironment;
-use crate::utils::utils_collisions::collision_object_utils::*;
+use crate::utils::utils_collisions::prelude::*;
 use crate::robot_modules::robot_fk_module::RobotFKResult;
 use crate::robot_modules::robot_core_collision_module::LinkGeometryType;
 

@@ -1,6 +1,6 @@
 use crate::robot_modules::robot_module_toolbox::*;
-use crate::utils::utils_collisions::collision_object_utils::*;
-use crate::robot_modules::robot_fk_module::RobotFKResult;
+use crate::utils::utils_collisions::collision_object_group_queries::*;
+use crate::robot_modules::robot_fk_module::*;
 use nalgebra::DVector;
 use std::slice::{Iter, IterMut};
 use termion::{style, color};
@@ -69,8 +69,8 @@ impl MultiRobotModuleToolbox {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn compute_fk(&self, full_state_vec: &DVector<f64>) -> Result<VectorOfRobotFKResult, String> {
-        let mut out_vec = VectorOfRobotFKResult::new_emtpy();
+    pub fn compute_fk(&self, full_state_vec: &DVector<f64>) -> Result<VecOfRobotFKResult, String> {
+        let mut out_vec = VecOfRobotFKResult::new_emtpy();
 
         let robot_state_vecs = self.split_full_state_vector_into_robot_state_vectors(full_state_vec)?;
         for i in 0..self._num_robots {
@@ -80,7 +80,7 @@ impl MultiRobotModuleToolbox {
         return Ok(out_vec);
     }
 
-    pub fn print_results_next_to_link_names(&self, fk_res: &VectorOfRobotFKResult) {
+    pub fn print_results_next_to_link_names(&self, fk_res: &VecOfRobotFKResult) {
         for i in 0..self._num_robots {
             println!("{}{}Robot {:?} ---> {}", style::Bold, color::Fg(color::Magenta), i, style::Reset);
             self._robot_module_toolboxes[i]
@@ -112,20 +112,3 @@ impl MultiRobotModuleToolbox {
 }
 
 
-#[derive(Debug, Clone)]
-pub struct VectorOfRobotFKResult {
-    _robot_fk_result: Vec<RobotFKResult>
-}
-impl VectorOfRobotFKResult {
-    pub fn new_emtpy() -> Self {
-        return Self { _robot_fk_result: Vec::new() };
-    }
-
-    pub fn add_robot_fk_result(&mut self, robot_fk_result: RobotFKResult) {
-        self._robot_fk_result.push(robot_fk_result);
-    }
-
-    pub fn get_robot_fk_results_ref(&self) -> &Vec<RobotFKResult> {
-        return &self._robot_fk_result;
-    }
-}

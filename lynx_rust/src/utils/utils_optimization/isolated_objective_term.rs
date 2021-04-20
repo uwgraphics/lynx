@@ -4,7 +4,7 @@ use crate::utils::utils_vars::prelude::*;
 use crate::utils::utils_optimization::loss_function::*;
 use crate::utils::utils_math::nalgebra_utils::{vec_to_dvec, vector3_to_dvec};
 use crate::utils::utils_se3::transformation_utils::*;
-use crate::utils::utils_collisions::collision_object_utils::*;
+use crate::utils::utils_collisions::collision_object_group_queries::*;
 use crate::robot_modules::robot_core_collision_module::LinkGeometryType;
 use crate::utils::utils_collisions::collision_environment::CollisionEnvironment;
 use crate::utils::utils_robot_objective_specification::link_info::*;

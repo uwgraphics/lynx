@@ -3,7 +3,9 @@ pub use crate::utils::utils_collisions::{collision_check_result_enum::*,
                                          collision_checker::*,
                                          collision_environment::*,
                                          collision_object::*,
-                                         collision_object_utils::*,
+                                         collision_object_group_queries::*,
                                          oriented_bounding_box::*,
                                          oriented_bounding_box_utils::*,
-                                         triangle_mesh_engine::*};
+                                         triangle_mesh_engine::*,
+                                         collision_multiple_results::*,
+                                         vec_of_collision_multiple_results::*};

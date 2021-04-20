@@ -1,8 +1,7 @@
-use crate::utils::utils_collisions::{collision_object::*, collision_check_tensor::*, collision_environment::CollisionEnvironment, collision_object_utils::*};
+use crate::utils::utils_collisions::prelude::*;
 use crate::robot_modules::{robot_configuration_module::RobotConfigurationModule, robot_dof_module::RobotDOFModule, robot_fk_module::*, robot_bounds_module::RobotBoundsModule, robot_triangle_mesh_collision_module::RobotTriangleMeshCollisionModule};
 use crate::utils::utils_preprocessing::mesh_preprocessing_utils::*;
 use crate::utils::utils_files_and_strings::{file_utils::*, robot_folder_utils::*};
-use crate::utils::utils_collisions::triangle_mesh_engine::TriMeshEngine;
 use crate::utils::utils_files_and_strings::string_utils::usize_to_string;
 use crate::utils::utils_se3::implicit_dual_quaternion::ImplicitDualQuaternion;
 use termion::{style, color};

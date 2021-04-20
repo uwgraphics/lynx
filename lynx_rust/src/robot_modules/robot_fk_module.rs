@@ -222,6 +222,25 @@ impl RobotFKResult {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct VecOfRobotFKResult {
+    _robot_fk_result: Vec<RobotFKResult>
+}
+
+impl VecOfRobotFKResult {
+    pub fn new_emtpy() -> Self {
+        return Self { _robot_fk_result: Vec::new() };
+    }
+
+    pub fn add_robot_fk_result(&mut self, robot_fk_result: RobotFKResult) {
+        self._robot_fk_result.push(robot_fk_result);
+    }
+
+    pub fn get_robot_fk_results_ref(&self) -> &Vec<RobotFKResult> {
+        return &self._robot_fk_result;
+    }
+}
+
 
 #[derive(Clone, Debug)]
 pub struct RobotFKGradientPerturbationsResult {
