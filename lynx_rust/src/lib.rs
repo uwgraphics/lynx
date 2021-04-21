@@ -548,7 +548,7 @@ macro_rules! write_to_recorder {
 pub mod utils;
 pub mod robot_modules;
 pub mod path_planning;
-pub mod app;
+// pub mod app;
 pub mod prelude;
 
 
@@ -647,7 +647,7 @@ mod tests {
         use crate::utils::utils_math::prelude::vec_to_dvec;
 
         // load robot world with environment "single_box" (included in assets/mesh_environments)
-        let mut robot_world = RobotWorld::new_from_robot_and_configuration_names(vec!["ur5"], vec![None], Some("single_box"))?;
+        let mut robot_world = RobotWorld::new(vec!["ur5"], vec![None], Some("single_box"))?;
 
         // compute forward kinematics using the fk_module
         let fk_result = robot_world.get_robot_set_ref().compute_fk(&vec_to_dvec(&vec![0.,0.,0.,0.,0.,0.]))?;

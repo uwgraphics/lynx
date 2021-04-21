@@ -5,7 +5,7 @@ use lynx_lib::utils::utils_math::prelude::vec_to_dvec;
 
 fn main() -> Result<(), String> {
     // load robot world with environment "single_box" (included in assets/mesh_environments)
-    let mut robot_world = RobotWorld::new_from_robot_and_configuration_names(vec!["ur5"], vec![None], Some("single_box"))?;
+    let mut robot_world = RobotWorld::new(vec!["ur5"], vec![None], Some("single_box"))?;
 
     // compute forward kinematics using the fk_module
     let fk_result = robot_world.get_robot_set_ref().compute_fk(&vec_to_dvec(&vec![0.,0.,0.,0.,0.,0.]))?;

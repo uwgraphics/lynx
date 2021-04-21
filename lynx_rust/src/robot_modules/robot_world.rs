@@ -11,8 +11,8 @@ pub struct RobotWorld {
 }
 
 impl RobotWorld {
-    pub fn new(robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
-        let _robot_set = RobotSet::new(robot_set_name)?;
+    pub fn new_from_set_name(robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
+        let _robot_set = RobotSet::new_from_set_name(robot_set_name)?;
         let mut _collision_environment = None;
         if environment_name.is_some() {
             _collision_environment = Some(CollisionEnvironment::new(environment_name.unwrap())?);
@@ -23,8 +23,8 @@ impl RobotWorld {
         return Ok(out_self);
     }
 
-    pub fn new_from_robot_and_configuration_names(robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
-        let _robot_set = RobotSet::new_from_robot_and_configuration_names(robot_names, configuration_names)?;
+    pub fn new(robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
+        let _robot_set = RobotSet::new(robot_names, configuration_names)?;
         let mut _collision_environment = None;
         if environment_name.is_some() {
             _collision_environment = Some(CollisionEnvironment::new(environment_name.unwrap())?);

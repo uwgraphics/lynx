@@ -1,7 +1,16 @@
+# This is a sample file for a robot set.  The name of this robot set would be `sample_robot_set' given the filename.
+# A robot set is exactly what it sounds like: at least one and possibly several robot platforms grouped together.
+# The format for this file can be seen in this sample:
+
+# The `robots_by_filenames' list specifies robots to include in the set based on filenames.
+# e.g., here, a ur5 robot is included using the `sample_config' configuration
 robots_by_filenames:
    - robot_name: "ur5" 
-     configuration_name: "sample_config"
+     configuration_name: "sample_config" # if you want to just use the default configuration, just leave this blank
  
+# The `robots_by_manual_inputs' list allows the user to specify robots manually using the same inputs as robot configuration files.
+# This is useful for situations where several robots have to be placed in configurations that are
+# specific just to the group structure
 robots_by_manual_inputs:
    - robot_name: "ur5"
      dead_end_links: [] 
@@ -15,7 +24,7 @@ robots_by_manual_inputs:
      dead_end_links: [] 
      inactive_joints: [] 
      mobile_base_mode: "static" 
-     mobile_base_bounds_filename: 
+     mobile_base_bounds_filename: # no input for this will result in the default mobile base bounds
      base_position_offset: [0., -1.0, 0.]
      base_orientation_offset: [0., 0., 0.]
 
@@ -23,6 +32,7 @@ robots_by_manual_inputs:
      dead_end_links: [] 
      inactive_joints: [] 
      mobile_base_mode: "static" 
-     mobile_base_bounds_filename: 
+     mobile_base_bounds_filename: # no input for this will result in the default mobile base bounds
      base_position_offset: [0., -1.0, 0.]
      base_orientation_offset: [0., 0., 0.]
+

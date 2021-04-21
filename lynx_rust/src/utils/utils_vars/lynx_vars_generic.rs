@@ -33,15 +33,29 @@ impl<'a> LynxVarsGeneric<'a> {
         return Ok(lynx_vars);
     }
 
-    pub fn new_single_threaded_packaged_with_robot_world(robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
-        let robot_world = RobotWorld::new(robot_set_name, environment_name)?;
+    pub fn new_single_threaded_packaged_with_robot_world(robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new(robot_names, configuration_names, environment_name)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_single_threaded();
         set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
         return Ok(lynx_vars);
     }
 
-    pub fn new_parallel_packaged_with_robot_world(num_threads: Option<usize>, robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
-        let robot_world = RobotWorld::new(robot_set_name, environment_name)?;
+    pub fn new_parallel_packaged_with_robot_world(num_threads: Option<usize>, robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new(robot_names, configuration_names, environment_name)?;
+        let mut lynx_vars = LynxVarsGeneric::new_empty_parallel(num_threads);
+        set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
+        return Ok(lynx_vars);
+    }
+
+    pub fn new_single_threaded_packaged_with_robot_world_from_set_name(robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new_from_set_name(robot_set_name, environment_name)?;
+        let mut lynx_vars = LynxVarsGeneric::new_empty_single_threaded();
+        set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
+        return Ok(lynx_vars);
+    }
+
+    pub fn new_parallel_packaged_with_robot_world_from_set_name(num_threads: Option<usize>, robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new_from_set_name(robot_set_name, environment_name)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_parallel(num_threads);
         set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
         return Ok(lynx_vars);
