@@ -5,6 +5,8 @@
 # inactive_joints: ["inactive_joint_1", "inactive_joint_2"] 
 # mobile_base_mode: "static" 
 #    ^^(can be static, floating, translation, rotation, planar_translation, planar_rotation, planar_translation_and_rotation)
+# mobile_base_bounds_filename:
+#    ^^(can be left blank if no bounds should be placed on mobile base, or a name of a file in the mobile_base_bounds directory)
 # base_position_offset: [0., 0., 0.] 
 #    ^^(represented in meters)
 # base_orientation_offset: [0., 0., 0.] 
@@ -13,5 +15,6 @@
 dead_end_links: [] 
 inactive_joints: [] 
 mobile_base_mode: "planar_translation_and_rotation" 
+mobile_base_bounds_filename: 
 base_position_offset: [0., 0., 0.]
 base_orientation_offset: [0., 0., 0.]

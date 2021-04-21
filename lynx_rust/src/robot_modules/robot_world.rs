@@ -1,53 +1,223 @@
-use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
+use crate::robot_modules::robot_set::*;
 use crate::utils::utils_collisions::prelude::*;
-use crate::robot_modules::robot_fk_module::RobotFKResult;
+use crate::robot_modules::robot_fk_module::*;
 use crate::robot_modules::robot_core_collision_module::LinkGeometryType;
+use termion::{style, color};
 
 #[derive(Clone, Debug)]
 pub struct RobotWorld {
-    _robot_module_toolbox: RobotModuleToolbox,
+    _robot_set: RobotSet,
     _collision_environment: Option<CollisionEnvironment>
 }
 
 impl RobotWorld {
-    pub fn new(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>, environment_name: Option<&str>) -> Result<Self, String> {
-        let _robot_module_toolbox = RobotModuleToolbox::new_lite(robot_name, configuration_name, mobile_base_bounds_filename)?;
+    pub fn new(robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
+        let _robot_set = RobotSet::new(robot_set_name)?;
         let mut _collision_environment = None;
         if environment_name.is_some() {
             _collision_environment = Some(CollisionEnvironment::new(environment_name.unwrap())?);
         }
 
-        return Ok(Self { _robot_module_toolbox, _collision_environment } );
+        let mut out_self = Self { _robot_set, _collision_environment };
+
+        return Ok(out_self);
+    }
+
+    pub fn new_from_robot_and_configuration_names(robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
+        let _robot_set = RobotSet::new_from_robot_and_configuration_names(robot_names, configuration_names)?;
+        let mut _collision_environment = None;
+        if environment_name.is_some() {
+            _collision_environment = Some(CollisionEnvironment::new(environment_name.unwrap())?);
+        }
+
+        let mut out_self = Self { _robot_set, _collision_environment };
+
+        return Ok(out_self);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn environment_intersect_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<IntersectCheckMultipleResult, String> {
+    pub fn environment_intersect_check(&mut self, fk_res: &VecOfRobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<VecOfIntersectCheckMultipleResult, String> {
         if self._collision_environment.is_none() {
-            return Ok(IntersectCheckMultipleResult::NoIntersectionsFound(IntersectionCheckMultipleInfo::new(stop_at_first_detected)));
+            return Ok(VecOfIntersectCheckMultipleResult::new_no_intersections_found(self._robot_set.get_num_robots(), stop_at_first_detected));
         }
-        return self._robot_module_toolbox.get_core_collision_module_mut_ref().environment_intersect_check(fk_res, link_geometry_type, &self._collision_environment.as_ref().unwrap(), stop_at_first_detected);
+        let mut out_vec = VecOfIntersectCheckMultipleResult::new_empty();
+
+        let l = self._robot_set.get_num_robots();
+        for i in 0..l {
+            let res = self._robot_set
+                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_core_collision_module_mut_ref()
+                .environment_intersect_check(&fk_res.get_robot_fk_results_ref()[i],
+                                             link_geometry_type.clone(),
+                                             &self._collision_environment.as_ref().unwrap(),
+                                             stop_at_first_detected)?;
+
+            let label = format!("environment intersect check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            if stop_at_first_detected && res.is_in_collision() {
+                out_vec.add_new_result(res, label);
+                return Ok(out_vec);
+            } else {
+                out_vec.add_new_result(res, label);
+            }
+        }
+
+        return Ok(out_vec);
     }
 
-    pub fn environment_distance_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<DistanceCheckMultipleResult, String> {
+    pub fn environment_distance_check(&mut self, fk_res: &VecOfRobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<VecOfDistanceCheckMultipleResult, String> {
         if self._collision_environment.is_none() {
-            return Ok(DistanceCheckMultipleResult::NoIntersectionsFound(DistanceCheckMultipleInfo::new(stop_at_first_detected)));
+            return Ok(VecOfDistanceCheckMultipleResult::new_no_intersections_found(self._robot_set.get_num_robots(), stop_at_first_detected));
         }
-        return self._robot_module_toolbox.get_core_collision_module_mut_ref().environment_distance_check(fk_res, link_geometry_type, &self._collision_environment.as_ref().unwrap(), stop_at_first_detected);
+        let mut out_vec = VecOfDistanceCheckMultipleResult::new_empty();
+
+        let l = self._robot_set.get_num_robots();
+        for i in 0..l {
+            let res = self._robot_set
+                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_core_collision_module_mut_ref()
+                .environment_distance_check(&fk_res.get_robot_fk_results_ref()[i],
+                                             link_geometry_type.clone(),
+                                             &self._collision_environment.as_ref().unwrap(),
+                                             stop_at_first_detected)?;
+
+            let label = format!("environment distance check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            if stop_at_first_detected && res.is_in_collision() {
+                out_vec.add_new_result(res, label);
+                return Ok(out_vec);
+            } else {
+                out_vec.add_new_result(res, label);
+            }
+        }
+
+        return Ok(out_vec);
     }
 
-    pub fn environment_contact_check(&mut self, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool, margin: Option<f64>) -> Result<ContactCheckMultipleResult, String> {
+    pub fn environment_contact_check(&mut self, fk_res: &VecOfRobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool, margin: Option<f64>) -> Result<VecOfContactCheckMultipleResult, String> {
         if self._collision_environment.is_none() {
-            return Ok(ContactCheckMultipleResult::NoIntersectionsFound(ContactCheckMultipleInfo::new(stop_at_first_detected, margin)));
+            return Ok(VecOfContactCheckMultipleResult::new_no_intersections_found(self._robot_set.get_num_robots(), stop_at_first_detected, margin));
         }
-        return self._robot_module_toolbox.get_core_collision_module_mut_ref().environment_contact_check(fk_res, link_geometry_type, &self._collision_environment.as_ref().unwrap(), stop_at_first_detected, margin);
+        let mut out_vec = VecOfContactCheckMultipleResult::new_empty();
+
+        let l = self._robot_set.get_num_robots();
+        for i in 0..l {
+            let res = self._robot_set
+                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_core_collision_module_mut_ref()
+                .environment_contact_check(&fk_res.get_robot_fk_results_ref()[i],
+                                            link_geometry_type.clone(),
+                                            &self._collision_environment.as_ref().unwrap(),
+                                            stop_at_first_detected, margin)?;
+
+            let label = format!("environment contact check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            if stop_at_first_detected && res.is_in_collision() {
+                out_vec.add_new_result(res, label);
+                return Ok(out_vec);
+            } else {
+                out_vec.add_new_result(res, label);
+            }
+        }
+
+        return Ok(out_vec);
     }
 
-    pub fn environment_contact_check_subset(&mut self, subset_check_idxs: &Vec<[[usize; 2]; 2]>, fk_res: &RobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool, margin: Option<f64>) -> Result<ContactCheckMultipleResult, String> {
-        if self._collision_environment.is_none() {
-            return Ok(ContactCheckMultipleResult::NoIntersectionsFound(ContactCheckMultipleInfo::new(stop_at_first_detected, margin)));
+    pub fn environment_intersect_check_subset(&mut self, subset_check_idxs: &Vec<Vec<[[usize; 2]; 2]>>, fk_res: &VecOfRobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<VecOfIntersectCheckMultipleResult, String> {
+        if subset_check_idxs.len() != self._robot_set.get_num_robots() {
+            return Err(format!("number of subset_check_idxs {:?} must equal number of robots {:?}", subset_check_idxs.len(), self._robot_set.get_num_robots()));
         }
-        return self._robot_module_toolbox.get_core_collision_module_mut_ref().environment_contact_check_subset(subset_check_idxs, fk_res, link_geometry_type, &self._collision_environment.as_ref().unwrap(), stop_at_first_detected, margin);
+
+        if self._collision_environment.is_none() {
+            return Ok(VecOfIntersectCheckMultipleResult::new_no_intersections_found(self._robot_set.get_num_robots(), stop_at_first_detected));
+        }
+        let mut out_vec = VecOfIntersectCheckMultipleResult::new_empty();
+
+        let l = self._robot_set.get_num_robots();
+        for i in 0..l {
+            let res = self._robot_set
+                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_core_collision_module_mut_ref()
+                .environment_intersect_check_subset(&subset_check_idxs[i],
+                                                  &fk_res.get_robot_fk_results_ref()[i],
+                                                  link_geometry_type.clone(),
+                                                  &self._collision_environment.as_ref().unwrap(),
+                                                  stop_at_first_detected)?;
+
+            let label = format!("environment intersect subset check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            if stop_at_first_detected && res.is_in_collision() {
+                out_vec.add_new_result(res, label);
+                return Ok(out_vec);
+            } else {
+                out_vec.add_new_result(res, label);
+            }
+        }
+
+        return Ok(out_vec);
+    }
+
+    pub fn environment_distance_check_subset(&mut self, subset_check_idxs: &Vec<Vec<[[usize; 2]; 2]>>, fk_res: &VecOfRobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool) -> Result<VecOfDistanceCheckMultipleResult, String> {
+        if subset_check_idxs.len() != self._robot_set.get_num_robots() {
+            return Err(format!("number of subset_check_idxs {:?} must equal number of robots {:?}", subset_check_idxs.len(), self._robot_set.get_num_robots()));
+        }
+
+        if self._collision_environment.is_none() {
+            return Ok(VecOfDistanceCheckMultipleResult::new_no_intersections_found(self._robot_set.get_num_robots(), stop_at_first_detected));
+        }
+        let mut out_vec = VecOfDistanceCheckMultipleResult::new_empty();
+
+        let l = self._robot_set.get_num_robots();
+        for i in 0..l {
+            let res = self._robot_set
+                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_core_collision_module_mut_ref()
+                .environment_distance_check_subset(&subset_check_idxs[i],
+                                                    &fk_res.get_robot_fk_results_ref()[i],
+                                                    link_geometry_type.clone(),
+                                                    &self._collision_environment.as_ref().unwrap(),
+                                                    stop_at_first_detected)?;
+
+            let label = format!("environment distance check subset on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            if stop_at_first_detected && res.is_in_collision() {
+                out_vec.add_new_result(res, label);
+                return Ok(out_vec);
+            } else {
+                out_vec.add_new_result(res, label);
+            }
+        }
+
+        return Ok(out_vec);
+    }
+
+    pub fn environment_contact_check_subset(&mut self, subset_check_idxs: &Vec<Vec<[[usize; 2]; 2]>>, fk_res: &VecOfRobotFKResult, link_geometry_type: LinkGeometryType, stop_at_first_detected: bool, margin: Option<f64>) -> Result<VecOfContactCheckMultipleResult, String> {
+        if subset_check_idxs.len() != self._robot_set.get_num_robots() {
+            return Err(format!("number of subset_check_idxs {:?} must equal number of robots {:?}", subset_check_idxs.len(), self._robot_set.get_num_robots()));
+        }
+
+        if self._collision_environment.is_none() {
+            return Ok(VecOfContactCheckMultipleResult::new_no_intersections_found(self._robot_set.get_num_robots(), stop_at_first_detected, margin));
+        }
+        let mut out_vec = VecOfContactCheckMultipleResult::new_empty();
+
+        let l = self._robot_set.get_num_robots();
+        for i in 0..l {
+            let res = self._robot_set
+                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_core_collision_module_mut_ref()
+                .environment_contact_check_subset(&subset_check_idxs[i],
+                                                  &fk_res.get_robot_fk_results_ref()[i],
+                                                  link_geometry_type.clone(),
+                                                  &self._collision_environment.as_ref().unwrap(),
+                                           stop_at_first_detected, margin)?;
+
+            let label = format!("environment contact check subset on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            if stop_at_first_detected && res.is_in_collision() {
+                out_vec.add_new_result(res, label);
+                return Ok(out_vec);
+            } else {
+                out_vec.add_new_result(res, label);
+            }
+        }
+
+        return Ok(out_vec);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,12 +232,12 @@ impl RobotWorld {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn get_robot_module_toolbox_mut_ref(&mut self) -> &mut RobotModuleToolbox {
-        return &mut self._robot_module_toolbox;
+    pub fn get_robot_set_mut_ref(&mut self) -> &mut RobotSet {
+        return &mut self._robot_set;
     }
 
-    pub fn get_robot_module_toolbox_ref(&self) -> &RobotModuleToolbox {
-        return &self._robot_module_toolbox;
+    pub fn get_robot_set_ref(&self) -> &RobotSet {
+        return &self._robot_set;
     }
 
     pub fn get_collision_environment_option_mut_ref(&mut self) -> &mut Option<CollisionEnvironment> {

@@ -16,7 +16,7 @@ impl VecOfIntersectCheckMultipleResult {
         let mut labels = Vec::new();
         for _ in 0..num {
             out_vec.push( IntersectCheckMultipleResult::NoIntersectionsFound(IntersectionCheckMultipleInfo::new(stopped_at_first_detected)) );
-            labels.push("default".to_string());
+            labels.push("automatic no intersections found label".to_string());
         }
         return Self { _intersect_check_multiple_results: out_vec, _labels: labels }
     }

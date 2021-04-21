@@ -1,5 +1,5 @@
 use crate::robot_modules::robot_fk_module::*;
-use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
+use crate::robot_modules::robot::Robot;
 use crate::utils::utils_vars::prelude::*;
 use crate::utils::utils_optimization::loss_function::*;
 use crate::utils::utils_math::nalgebra_utils::{vec_to_dvec, vector3_to_dvec};

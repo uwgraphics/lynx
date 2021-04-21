@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::utils::utils_collisions::{collision_environment::CollisionEnvironment, collision_multiple_results::*};
-use crate::robot_modules::{robot_world::RobotWorld, robot_module_toolbox::RobotModuleToolbox};
+use crate::robot_modules::{robot_world::RobotWorld, robot::Robot};
 use crate::utils::utils_image_environments::image_environment::ImageEnvironment;
 use crate::robot_modules::robot_fk_module::*;
 use crate::utils::utils_collisions::collision_object_group_queries::*;
@@ -17,7 +17,7 @@ pub struct LynxVars {
     pub f64VecOption: (Vec<Option<Vec<f64>>>, HashMap<&'static str, usize>, usize ),
     pub DVectorF64: (Vec<DVector<f64>>, HashMap<&'static str, usize>, usize),
     pub DVectorF64Vec: (Vec<Vec<DVector<f64>>>, HashMap<&'static str, usize>, usize),
-    pub RobotModuleToolbox: (Vec<RobotModuleToolbox>, HashMap<&'static str, usize>, usize),
+    pub Robot: (Vec<Robot>, HashMap<&'static str, usize>, usize),
     pub RobotWorld: (Vec<RobotWorld>, HashMap<&'static str, usize>, usize),
     pub CollisionEnvironment: (Vec<CollisionEnvironment>, HashMap<&'static str, usize>, usize),
     pub CollisionEnvironmentOption: (Vec<Option<CollisionEnvironment>>, HashMap<&'static str, usize>, usize),
@@ -48,7 +48,7 @@ impl LynxVars{
             f64VecOption: (Vec::new(), HashMap::new(), 0),
             DVectorF64: (Vec::new(), HashMap::new(), 0),
             DVectorF64Vec: (Vec::new(), HashMap::new(), 0),
-            RobotModuleToolbox: (Vec::new(), HashMap::new(), 0),
+            Robot: (Vec::new(), HashMap::new(), 0),
             RobotWorld: (Vec::new(), HashMap::new(), 0),
             CollisionEnvironment: (Vec::new(), HashMap::new(), 0),
             CollisionEnvironmentOption: (Vec::new(), HashMap::new(), 0),

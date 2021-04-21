@@ -4,20 +4,20 @@ use lynx_lib::prelude::*;
 
 fn main() -> Result<(), String> {
 
-    // load robot module toolbox
-    let mut robot_module_toolbox = RobotModuleToolbox::new_lite("ur5", None, None)?;
+    // load robot
+    let mut robot = Robot::new("ur5", None)?;
 
     // print link order
-    robot_module_toolbox.get_configuration_module_ref().robot_model_module.print_link_order();
+    robot.get_configuration_module_ref().robot_model_module.print_link_order();
 
     // print joint order
-    robot_module_toolbox.get_dof_module_ref().print_joint_dof_order();
+    robot.get_dof_module_ref().print_joint_dof_order();
 
     // print robot joint position bounds
-    robot_module_toolbox.get_bounds_module_ref().print_bounds();
+    robot.get_bounds_module_ref().print_bounds();
 
     // print information about salient links.  This is loaded in from robot_salient_links/robot_salient_links.yaml file in robots directory.
-    robot_module_toolbox.get_salient_links_module_ref().print_summary();
+    robot.get_salient_links_module_ref().print_summary();
 
     Ok(())
 }

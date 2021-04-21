@@ -1,0 +1,28 @@
+robots_by_filenames:
+   - robot_name: "ur5" 
+     configuration_name: "sample_config"
+ 
+robots_by_manual_inputs:
+   - robot_name: "ur5"
+     dead_end_links: [] 
+     inactive_joints: [] 
+     mobile_base_mode: "planar_translation_and_rotation" 
+     mobile_base_bounds_filename: 
+     base_position_offset: [0., 0., 0.]
+     base_orientation_offset: [0., 0., 0.]
+
+   - robot_name: "ur5"
+     dead_end_links: [] 
+     inactive_joints: [] 
+     mobile_base_mode: "static" 
+     mobile_base_bounds_filename: 
+     base_position_offset: [0., -1.0, 0.]
+     base_orientation_offset: [0., 0., 0.]
+
+   - robot_name: "ur5"
+     dead_end_links: [] 
+     inactive_joints: [] 
+     mobile_base_mode: "static" 
+     mobile_base_bounds_filename: 
+     base_position_offset: [0., -1.0, 0.]
+     base_orientation_offset: [0., 0., 0.]

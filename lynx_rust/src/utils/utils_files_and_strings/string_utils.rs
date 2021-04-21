@@ -57,6 +57,10 @@ pub fn glue_strings(s1: String, s2: String, separator: &str) -> String {
     s1 + separator + s2.as_str()
 }
 
+pub fn str_option_to_string_option(s: Option<&str>) -> Option<String> {
+    return if s.is_none() { None } else { Some(s.unwrap().to_string()) }
+}
+
 /*
 pub fn contains_exact(s: &String, substring: &String) -> bool {
     if s.contains(&substring.as_str()) {

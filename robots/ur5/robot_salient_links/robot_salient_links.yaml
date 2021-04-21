@@ -22,8 +22,8 @@
 # 
 # feel free to uncomment the following lines to get started.  If you do not want to specify any robot_salient_links for now, just leave this commented. 
 
-# - link_name: 
-#   salient_link_type: 
-#   link_local_forward_axis: 
-#   link_local_left_axis: 
-#   link_local_up_axis: 
+- link_name: "ee_link"
+  salient_link_type: "EndEffector"
+  link_local_forward_axis: "X"
+  link_local_left_axis: "Y"
+  link_local_up_axis: "Z"

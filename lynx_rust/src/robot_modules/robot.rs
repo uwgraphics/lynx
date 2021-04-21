@@ -8,12 +8,13 @@ use crate::robot_modules::robot_triangle_mesh_collision_module::RobotTriangleMes
 use crate::robot_modules::robot_core_collision_parallel_module::RobotCoreCollisionParallelModule;
 use crate::robot_modules::robot_triangle_mesh_collision_parallel_module::RobotTriangleMeshCollisionParallelModule;
 use crate::robot_modules::robot_salient_links_module::RobotSalientLinksModule;
+use crate::utils::utils_se3::implicit_dual_quaternion::ImplicitDualQuaternion;
+use crate::utils::utils_files_and_strings::string_utils::*;
 use termion::{style, color};
 use std::fmt;
 
-
 #[derive(Clone)]
-pub struct RobotModuleToolbox {
+pub struct Robot {
     _robot_configuration_module: RobotConfigurationModule,
     _robot_dof_module: RobotDOFModule,
     _robot_bounds_module: RobotBoundsModule,
@@ -25,11 +26,11 @@ pub struct RobotModuleToolbox {
     // _robot_triangle_mesh_collision_parallel_module: Option<RobotTriangleMeshCollisionParallelModule>
 }
 
-impl RobotModuleToolbox {
-    pub fn new_lite(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
+impl Robot {
+    pub fn new(robot_name: &str, configuration_name: Option<&str>) -> Result<Self, String> {
         let _robot_configuration_module = RobotConfigurationModule::new(robot_name, configuration_name)?;
         let _robot_dof_module = RobotDOFModule::new(&_robot_configuration_module);
-        let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module, mobile_base_bounds_filename);
+        let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_fk_module = RobotFKModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_salient_links_module = RobotSalientLinksModule::new(&_robot_configuration_module);
         let _robot_core_collision_module = RobotCoreCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
@@ -38,19 +39,41 @@ impl RobotModuleToolbox {
             _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
     }
 
-    pub fn new_all(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
-        let _robot_configuration_module = RobotConfigurationModule::new(robot_name, configuration_name)?;
+    pub fn new_from_manual_inputs(robot_name: &str, configuration_name: &str, base_offset: ImplicitDualQuaternion, dead_end_link_names: Vec<String>, inactive_joint_names: Vec<String>, mobile_base_mode: String, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
+        let _robot_configuration_module = RobotConfigurationModule::new_manual_inputs(robot_name, configuration_name, base_offset, dead_end_link_names, inactive_joint_names, mobile_base_mode, str_option_to_string_option(mobile_base_bounds_filename));
         let _robot_dof_module = RobotDOFModule::new(&_robot_configuration_module);
-        let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module, mobile_base_bounds_filename);
+        let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_fk_module = RobotFKModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_salient_links_module = RobotSalientLinksModule::new(&_robot_configuration_module);
         let _robot_core_collision_module = RobotCoreCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
 
-        // extra initializations...
-        let _robot_triangle_mesh_collision_module = RobotTriangleMeshCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
-
         return Ok( Self { _robot_configuration_module, _robot_dof_module, _robot_bounds_module, _robot_fk_module,
-            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: Some(_robot_triangle_mesh_collision_module) } );
+            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
+    }
+
+    pub fn new_from_configuration_module(robot_configuration_module: &RobotConfigurationModule) -> Result<Self, String> {
+        let _robot_dof_module = RobotDOFModule::new(robot_configuration_module);
+        let _robot_bounds_module = RobotBoundsModule::new(robot_configuration_module, &_robot_dof_module);
+        let _robot_fk_module = RobotFKModule::new(robot_configuration_module, &_robot_dof_module);
+        let _robot_salient_links_module = RobotSalientLinksModule::new(robot_configuration_module);
+        let _robot_core_collision_module = RobotCoreCollisionModule::new(robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
+
+        return Ok( Self { _robot_configuration_module: robot_configuration_module.clone(), _robot_dof_module, _robot_bounds_module, _robot_fk_module,
+            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    pub fn initialize_all_module_structures(&mut self) -> Result<(), String> {
+        self.get_configuration_module_ref();
+        self.get_dof_module_ref();
+        self.get_bounds_module_mut_ref();
+        self.get_fk_module_ref();
+        self.get_salient_links_module_ref();
+        self.get_core_collision_module_mut_ref();
+        self.get_triangle_mesh_collision_module_mut_ref()?;
+
+        Ok(())
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +176,7 @@ impl RobotModuleToolbox {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-impl fmt::Debug for RobotModuleToolbox {
+impl fmt::Debug for Robot {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Ok(())
     }
