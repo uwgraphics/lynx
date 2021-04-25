@@ -548,7 +548,7 @@ macro_rules! write_to_recorder {
 pub mod utils;
 pub mod robot_modules;
 pub mod path_planning;
-// pub mod app;
+pub mod app;
 pub mod prelude;
 
 

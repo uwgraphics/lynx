@@ -16,5 +16,5 @@ dead_end_links: []
 inactive_joints: [] 
 mobile_base_mode: "static" 
 mobile_base_bounds_filename:
-base_position_offset: [0., 0., 0.]
+base_position_offset: [0., -0.5, 0.]
 base_orientation_offset: [0., 0., 0.]

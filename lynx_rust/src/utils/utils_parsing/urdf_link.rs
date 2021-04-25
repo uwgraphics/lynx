@@ -3,6 +3,7 @@ use nalgebra::{Vector3, Matrix3};
 use serde::{Serialize, Deserialize};
 use crate::utils::utils_parsing::urdf_parsing_utils::recover_real_mesh_file_path_from_ros_style_reference;
 use crate::utils::utils_files_and_strings::file_utils::recover_filename_from_full_path;
+use crate::utils::utils_files_and_strings::file_utils::get_filename_without_extension;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct URDFLink {
@@ -11,7 +12,9 @@ pub struct URDFLink {
     pub visual: Vec<URDFLinkGeometryInfo>,
     pub collision: Vec<URDFLinkGeometryInfo>,
     pub includes_visual_info: bool,
-    pub includes_collision_info: bool
+    pub includes_collision_info: bool,
+    pub visual_file_name_without_extension: Option<String>,
+    pub collision_file_name_without_extension: Option<String>,
 }
 
 impl URDFLink {
@@ -34,11 +37,29 @@ impl URDFLink {
         let mut includes_visual_info = visual.len() > 0;
         let mut includes_collision_info = collision.len() > 0;
 
-        Self { name, inertial, visual, collision, includes_visual_info, includes_collision_info }
+        let mut visual_file_name_without_extension = None;
+        if includes_visual_info {
+            let visual_file_name = visual[0].filename.clone();
+            if visual_file_name.is_some() {
+                let visual_file_name_unwrap = visual_file_name.unwrap();
+                visual_file_name_without_extension = Some( get_filename_without_extension(visual_file_name_unwrap) );
+            }
+        }
+
+        let mut collision_file_name_without_extension = None;
+        if includes_collision_info {
+            let collision_file_name = collision[0].filename.clone();
+            if collision_file_name.is_some() {
+                let collision_file_name_unwrap = collision_file_name.unwrap();
+                collision_file_name_without_extension = Some( get_filename_without_extension(collision_file_name_unwrap) );
+            }
+        }
+
+        Self { name, inertial, visual, collision, includes_visual_info, includes_collision_info, visual_file_name_without_extension, collision_file_name_without_extension }
     }
 
     pub fn new_empty() -> Self {
-        return Self{name: "".to_string(), inertial: URDFLinkInertialInfo::new_empty(), visual: Vec::new(), collision: Vec::new(), includes_visual_info: false, includes_collision_info: false };
+        return Self{name: "".to_string(), inertial: URDFLinkInertialInfo::new_empty(), visual: Vec::new(), collision: Vec::new(), includes_visual_info: false, includes_collision_info: false, visual_file_name_without_extension: None, collision_file_name_without_extension: None };
     }
 }
 

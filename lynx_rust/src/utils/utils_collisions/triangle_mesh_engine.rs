@@ -20,6 +20,7 @@ use crate::utils::utils_sampling::prelude::*;
 use crate::utils::utils_math::geometry_utils::*;
 use crate::utils::utils_se3::implicit_dual_quaternion::ImplicitDualQuaternion;
 
+
 /*
 This struct parses .dae, .obj, and .stl files and converts them into tri meshes
 */
@@ -124,7 +125,6 @@ impl TriMeshEngine {
                 }
             }
         }
-
 
         for i in 0..num_objects {
             let curr_len = vertices.len();
@@ -299,6 +299,7 @@ impl TriMeshEngine {
         if exists {
             fs::remove_file(  Path::new(&out_fp) );
         }
+
         let mut out_file =  OpenOptions::new().write(true).create(true).open(out_fp.clone()).unwrap();
         stl_io::write_stl(&mut out_file, mesh.iter()).unwrap();
     }

@@ -88,6 +88,12 @@ pub fn get_filename_without_extension(filename: String) -> String {
     return split[0].to_string();
 }
 
+pub fn get_filename_extension(filename: String) -> String {
+    let split: Vec<&str> = filename.split(".").collect();
+    let l = split.len();
+    return split[l-1].to_string();
+}
+
 pub fn create_directories_recursively(fp: String) {
     // will create all new directories, even if some don't already exist along the way
     fs::create_dir_all(fp);

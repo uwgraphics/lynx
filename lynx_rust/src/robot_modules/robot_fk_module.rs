@@ -131,7 +131,8 @@ impl RobotFKModule {
         if first_layer && !self._base_offset.is_identity { out_pose = self._base_offset.clone(); }
 
         if self._joints_copy[predecessor_joint_idx].has_origin_offset {
-            out_pose = out_pose.multiply_shortcircuit(  &self._joints_copy[predecessor_joint_idx].origin_offset  );
+            // out_pose = out_pose.multiply_shortcircuit(  &self._joints_copy[predecessor_joint_idx].origin_offset  );
+            out_pose = out_pose.multiply(  &self._joints_copy[predecessor_joint_idx].origin_offset  );
         }
 
         if !self._joints_copy[predecessor_joint_idx].active || self._joints_copy[predecessor_joint_idx].num_dofs == 0 {
@@ -148,7 +149,8 @@ impl RobotFKModule {
             else {
                 let dof_translation = x[x_dof_start_idx + count] * &self._joints_copy[predecessor_joint_idx].dof_translation_axes[i];
                 let idq = ImplicitDualQuaternion::new_from_euler_angles(0., 0., 0., dof_translation);
-                out_pose = out_pose.multiply_shortcircuit( &idq );
+                // out_pose = out_pose.multiply_shortcircuit( &idq );
+                out_pose = out_pose.multiply(&idq);
 
                 count += 1;
             }
@@ -160,7 +162,8 @@ impl RobotFKModule {
             else {
                 let dof_quat = UnitQuaternion::from_axis_angle( &self._joints_copy[predecessor_joint_idx].dof_rotation_axes_as_units[i], x[x_dof_start_idx + count]);
                 let idq = ImplicitDualQuaternion::new( dof_quat, Vector3::zeros() );
-                out_pose = out_pose.multiply_shortcircuit( &idq );
+                // out_pose = out_pose.multiply_shortcircuit( &idq );
+                out_pose = out_pose.multiply(&idq);
 
                 count += 1;
             }

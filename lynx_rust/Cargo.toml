@@ -17,7 +17,7 @@ collada = "0.13.0"
 stl_io = "0.5.2"
 tobj = "2.0.2"
 termion = "*"
-# meshopt = "0.1.9"
+meshopt = "0.1.9"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 yaml-rust = "0.4"
@@ -34,6 +34,7 @@ bevy_mod_picking = "0.4"
 bevy_stl = {version="0.3.0", features = ["wireframe"]}
 bevy_obj = "0.5.0"
 bevy_egui = "0.4.0"
+RustyXML = "0.1.0"
 
 [lib]
 name = "lynx_lib"

@@ -222,6 +222,18 @@ impl RobotWorld {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    pub fn update_robot_set(&mut self, robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>) -> Result<(), String> {
+        let robot_set = RobotSet::new(robot_names, configuration_names)?;
+        self._robot_set = robot_set;
+        Ok(())
+    }
+
+    pub fn update_robot_set_from_set_name(&mut self, robot_set_name: &str) -> Result<(), String> {
+        let robot_set = RobotSet::new_from_set_name(robot_set_name)?;
+        self._robot_set = robot_set;
+        Ok(())
+    }
+
     pub fn update_collision_environment(&mut self, environment_name: Option<&str>) -> Result<(), String> {
         self._collision_environment = None;
         if environment_name.is_some() {
