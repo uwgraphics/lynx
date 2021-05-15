@@ -224,7 +224,7 @@ impl TriMeshEngine {
         let mut vertices = Vec::new();
         let mut indices = Vec::new();
 
-        let mut file = OpenOptions::new().read(true).open(fp.clone()).unwrap();
+        let mut file = OpenOptions::new().read(true).open(fp.clone()).expect(format!("could not open stl file {:?}", fp).as_str());
         let stl = stl_io::read_stl(&mut file).unwrap();
 
         for i in 0..stl.vertices.len() {
@@ -266,6 +266,13 @@ impl TriMeshEngine {
             let v = Vector3::new( self.vertices[i][0],  self.vertices[i][1],  self.vertices[i][2] );
             let res = transform.multiply_by_vector3( &v );
             self.vertices[i] = Point3::new( res[0], res[1], res[2] );
+        }
+    }
+
+    pub fn scale_vertices(&mut self, sx: f64, sy: f64, sz: f64) {
+        let l = self.vertices.len();
+        for i in 0..l {
+            self.vertices[i] = Point3::new( sx * self.vertices[i][0], sy * self.vertices[i][1], sz * self.vertices[i][2] );
         }
     }
 

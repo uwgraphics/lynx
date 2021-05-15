@@ -19,7 +19,7 @@ pub fn get_all_urdf_links_from_robot_name(robot_name: String) -> Vec<URDFLink> {
     let l = urdf_robo_u.links.len();
 
     for i in 0..l {
-        out_vec.push( URDFLink::new_from_urdf_link( &urdf_robo_u.links[i] ) );
+        out_vec.push( URDFLink::new_from_urdf_link( &robot_name, &urdf_robo_u.links[i] ) );
     }
 
     out_vec

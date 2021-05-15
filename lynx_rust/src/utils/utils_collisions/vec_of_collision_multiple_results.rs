@@ -162,7 +162,7 @@ impl VecOfContactCheckMultipleResult {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn get_distance_check_multiple_results_ref(&self) -> &Vec<ContactCheckMultipleResult> {
+    pub fn get_contact_check_multiple_results_ref(&self) -> &Vec<ContactCheckMultipleResult> {
         return &self._contact_check_multiple_results;
     }
 

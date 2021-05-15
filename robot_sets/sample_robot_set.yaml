@@ -17,7 +17,15 @@ robots_by_manual_inputs:
      inactive_joints: [] 
      mobile_base_mode: "planar_translation_and_rotation" 
      mobile_base_bounds_filename: 
-     base_position_offset: [0., 0., 0.]
+     base_position_offset: [1., 0., 0.]
+     base_orientation_offset: [0., 0., 0.]
+
+   - robot_name: "ur5"
+     dead_end_links: [] 
+     inactive_joints: [] 
+     mobile_base_mode: "static" 
+     mobile_base_bounds_filename: # no input for this will result in the default mobile base bounds
+     base_position_offset: [0., -1.5, 0.]
      base_orientation_offset: [0., 0., 0.]
 
    - robot_name: "ur5"
@@ -26,13 +34,5 @@ robots_by_manual_inputs:
      mobile_base_mode: "static" 
      mobile_base_bounds_filename: # no input for this will result in the default mobile base bounds
      base_position_offset: [0., -1.0, 0.]
-     base_orientation_offset: [0., 0., 0.]
-
-   - robot_name: "ur5"
-     dead_end_links: [] 
-     inactive_joints: [] 
-     mobile_base_mode: "static" 
-     mobile_base_bounds_filename: # no input for this will result in the default mobile base bounds
-     base_position_offset: [0., -1.0, 0.]
-     base_orientation_offset: [0., 0., 0.]
+     base_orientation_offset: [0., 1.57, 0.]
 

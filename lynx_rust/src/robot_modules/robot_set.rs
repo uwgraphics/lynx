@@ -132,9 +132,9 @@ impl RobotSet {
         let mut out_vec = VecOfIntersectCheckMultipleResult::new_empty();
         let l = self.get_num_robots();
         for i in 0..l {
-            let res = self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().self_intersect_check(&fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected)?;
+            let res = self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().self_intersect_check(&fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected)?;
 
-            let label = format!("self intersect check on robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("self intersect check on robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -149,9 +149,9 @@ impl RobotSet {
         let mut out_vec = VecOfDistanceCheckMultipleResult::new_empty();
         let l = self.get_num_robots();
         for i in 0..l {
-            let res = self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().self_distance_check(&fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected)?;
+            let res = self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().self_distance_check(&fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected)?;
 
-            let label = format!("self distance check on robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("self distance check on robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -166,9 +166,9 @@ impl RobotSet {
         let mut out_vec = VecOfContactCheckMultipleResult::new_empty();
         let l = self.get_num_robots();
         for i in 0..l {
-            let res = self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().self_contact_check(&fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected, margin)?;
+            let res = self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().self_contact_check(&fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected, margin)?;
 
-            let label = format!("self contact check on robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("self contact check on robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -187,11 +187,11 @@ impl RobotSet {
         let mut out_vec = VecOfIntersectCheckMultipleResult::new_empty();
         let l = self.get_num_robots();
         for i in 0..l {
-            let res = self.get_robot_module_toolboxes_mut_ref()[i]
+            let res = self.get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .self_intersect_check_subset(&subset_check_idxs[i], &fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected)?;
 
-            let label = format!("self intersect subset check on robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("self intersect subset check on robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -210,11 +210,11 @@ impl RobotSet {
         let mut out_vec = VecOfDistanceCheckMultipleResult::new_empty();
         let l = self.get_num_robots();
         for i in 0..l {
-            let res = self.get_robot_module_toolboxes_mut_ref()[i]
+            let res = self.get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .self_distance_check_subset(&subset_check_idxs[i], &fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected)?;
 
-            let label = format!("self distance check subset on robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("self distance check subset on robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -233,11 +233,11 @@ impl RobotSet {
         let mut out_vec = VecOfContactCheckMultipleResult::new_empty();
         let l = self.get_num_robots();
         for i in 0..l {
-            let res = self.get_robot_module_toolboxes_mut_ref()[i]
+            let res = self.get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .self_contact_check_subset(&subset_check_idxs[i], &fk_res.get_robot_fk_results_ref()[i], link_geometry_type.clone(), stop_at_first_detected, margin)?;
 
-            let label = format!("self contact check subset on robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("self contact check subset on robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -255,18 +255,18 @@ impl RobotSet {
 
         let l = self.get_num_robots().clone();
         for i in 0..l {
-            self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
+            self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
             for j in 0..l {
                 if i < j {
-                    self.get_robot_module_toolboxes_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
+                    self.get_robots_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
 
-                    let collision_objects1 = self.get_robot_module_toolboxes_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
-                    let collision_objects2 = self.get_robot_module_toolboxes_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects1 = self.get_robots_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects2 = self.get_robots_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
 
                     let res = intersect_check_between_multiple_collision_objects(collision_objects1, collision_objects2, stop_at_first_detected, None)?;
 
-                    let label = format!("multi robot intersect check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
-                                        j, self.get_robot_module_toolboxes_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
+                    let label = format!("multi robot intersect check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
+                                        j, self.get_robots_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
                     if res.is_in_collision() && stop_at_first_detected {
                         out_vec.add_new_result(res, label);
                         return Ok(out_vec);
@@ -284,18 +284,18 @@ impl RobotSet {
 
         let l = self.get_num_robots().clone();
         for i in 0..l {
-            self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
+            self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
             for j in 0..l {
                 if i < j {
-                    self.get_robot_module_toolboxes_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
+                    self.get_robots_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
 
-                    let collision_objects1 = self.get_robot_module_toolboxes_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
-                    let collision_objects2 = self.get_robot_module_toolboxes_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects1 = self.get_robots_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects2 = self.get_robots_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
 
                     let res = distance_check_between_multiple_collision_objects(collision_objects1, collision_objects2, stop_at_first_detected, None, None)?;
 
-                    let label = format!("multi robot distance check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
-                                        j, self.get_robot_module_toolboxes_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
+                    let label = format!("multi robot distance check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
+                                        j, self.get_robots_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
                     if res.is_in_collision() && stop_at_first_detected {
                         out_vec.add_new_result(res, label);
                         return Ok(out_vec);
@@ -313,19 +313,19 @@ impl RobotSet {
 
         let l = self.get_num_robots().clone();
         for i in 0..l {
-            self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
+            self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
             for j in 0..l {
                 if i < j {
-                    self.get_robot_module_toolboxes_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
+                    self.get_robots_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
 
-                    let collision_objects1 = self.get_robot_module_toolboxes_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
-                    let collision_objects2 = self.get_robot_module_toolboxes_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects1 = self.get_robots_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects2 = self.get_robots_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
 
                     let res = contact_check_between_multiple_collision_objects(collision_objects1, collision_objects2, stop_at_first_detected, margin, None, None)?;
 
 
-                    let label = format!("multi robot contact check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
-                                        j, self.get_robot_module_toolboxes_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
+                    let label = format!("multi robot contact check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
+                                        j, self.get_robots_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
                     if res.is_in_collision() && stop_at_first_detected {
                         out_vec.add_new_result(res, label);
                         return Ok(out_vec);
@@ -349,19 +349,19 @@ impl RobotSet {
 
         let l = self.get_num_robots().clone();
         for i in 0..l {
-            self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
+            self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
             for j in 0..l {
                 if i < j {
-                    self.get_robot_module_toolboxes_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
+                    self.get_robots_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
 
-                    let collision_objects1 = self.get_robot_module_toolboxes_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
-                    let collision_objects2 = self.get_robot_module_toolboxes_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects1 = self.get_robots_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects2 = self.get_robots_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
 
                     let res = intersect_check_between_multiple_collision_objects_subset(&subset_check_idxs[count], collision_objects1, collision_objects2, stop_at_first_detected, None)?;
                     count += 1;
 
-                    let label = format!("multi robot intersect subset check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
-                                        j, self.get_robot_module_toolboxes_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
+                    let label = format!("multi robot intersect subset check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
+                                        j, self.get_robots_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
                     if res.is_in_collision() && stop_at_first_detected {
                         out_vec.add_new_result(res, label);
                         return Ok(out_vec);
@@ -385,19 +385,19 @@ impl RobotSet {
 
         let l = self.get_num_robots().clone();
         for i in 0..l {
-            self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
+            self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
             for j in 0..l {
                 if i < j {
-                    self.get_robot_module_toolboxes_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
+                    self.get_robots_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
 
-                    let collision_objects1 = self.get_robot_module_toolboxes_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
-                    let collision_objects2 = self.get_robot_module_toolboxes_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects1 = self.get_robots_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects2 = self.get_robots_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
 
                     let res = distance_check_between_multiple_collision_objects_subset(&subset_check_idxs[count], collision_objects1, collision_objects2, stop_at_first_detected, None, None)?;
                     count += 1;
 
-                    let label = format!("multi robot distance check subset between robot {} ({:?}) and robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
-                                        j, self.get_robot_module_toolboxes_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
+                    let label = format!("multi robot distance check subset between robot {} ({:?}) and robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
+                                        j, self.get_robots_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
                     if res.is_in_collision() && stop_at_first_detected {
                         out_vec.add_new_result(res, label);
                         return Ok(out_vec);
@@ -421,19 +421,19 @@ impl RobotSet {
 
         let l = self.get_num_robots().clone();
         for i in 0..l {
-            self.get_robot_module_toolboxes_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
+            self.get_robots_mut_ref()[i].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[i], &link_geometry_type);
             for j in 0..l {
                 if i < j {
-                    self.get_robot_module_toolboxes_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
+                    self.get_robots_mut_ref()[j].get_core_collision_module_mut_ref().set_poses_on_links(&fk_res.get_robot_fk_results_ref()[j], &link_geometry_type);
 
-                    let collision_objects1 = self.get_robot_module_toolboxes_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
-                    let collision_objects2 = self.get_robot_module_toolboxes_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects1 = self.get_robots_ref()[i].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
+                    let collision_objects2 = self.get_robots_ref()[j].get_core_collision_module_ref().get_link_geometry_collision_objects_ref(&link_geometry_type);
 
                     let res = contact_check_between_multiple_collision_objects_subset(&subset_check_idxs[count], collision_objects1, collision_objects2, stop_at_first_detected, margin, None, None)?;
                     count += 1;
 
-                    let label = format!("multi robot contact subset check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
-                                        j, self.get_robot_module_toolboxes_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
+                    let label = format!("multi robot contact subset check between robot {} ({:?}) and robot {} ({:?})", i, self.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone(),
+                                        j, self.get_robots_ref()[j].get_configuration_module_ref().robot_model_module.robot_name.clone());
                     if res.is_in_collision() && stop_at_first_detected {
                         out_vec.add_new_result(res, label);
                         return Ok(out_vec);
@@ -616,9 +616,9 @@ impl RobotSet {
         return self._robots.iter_mut();
     }
 
-    pub fn get_robot_module_toolboxes_ref(&self) -> &Vec<Robot> { return &self._robots; }
+    pub fn get_robots_ref(&self) -> &Vec<Robot> { return &self._robots; }
 
-    pub fn get_robot_module_toolboxes_mut_ref(&mut self) -> &mut Vec<Robot> { return &mut self._robots; }
+    pub fn get_robots_mut_ref(&mut self) -> &mut Vec<Robot> { return &mut self._robots; }
 
     pub fn get_dofs_per_robot_ref(&self) -> &Vec<usize> { return &self._dofs_per_robot; }
 

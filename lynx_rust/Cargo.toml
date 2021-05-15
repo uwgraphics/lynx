@@ -33,13 +33,15 @@ bevy = "0.5"
 bevy_mod_picking = "0.4"
 bevy_stl = {version="0.3.0", features = ["wireframe"]}
 bevy_obj = "0.5.0"
-bevy_egui = "0.4.0"
+bevy_egui = "0.4.2"
 RustyXML = "0.1.0"
+bevy_prototype_debug_lines = "0.3.1"
 
 [lib]
 name = "lynx_lib"
 path = "src/lib.rs"
 # crate-type = ["rlib", "dylib"]
+
 
 [profile.dev]
 opt-level = 3

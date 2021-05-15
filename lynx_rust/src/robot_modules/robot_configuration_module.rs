@@ -205,6 +205,7 @@ impl RobotConfigurationModule {
 
         let mut new_link = Link::new_without_urdf_link( new_link_idx, None, vec![world_link_idx], None, vec![ new_joint_idx ] );
         new_link.name = "world_link_preceding_mobile_base_joint".to_string();
+        new_link.is_mobile_base_link = true;
         let mut new_joint = Joint::new_without_urdf_joint( new_joint_idx, new_link_idx, world_link_idx );
         new_joint.name = "mobile_base_joint".to_string();
 

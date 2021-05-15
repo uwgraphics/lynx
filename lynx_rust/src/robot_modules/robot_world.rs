@@ -46,14 +46,14 @@ impl RobotWorld {
         let l = self._robot_set.get_num_robots();
         for i in 0..l {
             let res = self._robot_set
-                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .environment_intersect_check(&fk_res.get_robot_fk_results_ref()[i],
                                              link_geometry_type.clone(),
                                              &self._collision_environment.as_ref().unwrap(),
                                              stop_at_first_detected)?;
 
-            let label = format!("environment intersect check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("environment intersect check on robot {} ({:?})", i, self._robot_set.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -74,14 +74,14 @@ impl RobotWorld {
         let l = self._robot_set.get_num_robots();
         for i in 0..l {
             let res = self._robot_set
-                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .environment_distance_check(&fk_res.get_robot_fk_results_ref()[i],
                                              link_geometry_type.clone(),
                                              &self._collision_environment.as_ref().unwrap(),
                                              stop_at_first_detected)?;
 
-            let label = format!("environment distance check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("environment distance check on robot {} ({:?})", i, self._robot_set.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -102,14 +102,14 @@ impl RobotWorld {
         let l = self._robot_set.get_num_robots();
         for i in 0..l {
             let res = self._robot_set
-                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .environment_contact_check(&fk_res.get_robot_fk_results_ref()[i],
                                             link_geometry_type.clone(),
                                             &self._collision_environment.as_ref().unwrap(),
                                             stop_at_first_detected, margin)?;
 
-            let label = format!("environment contact check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("environment contact check on robot {} ({:?})", i, self._robot_set.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -134,7 +134,7 @@ impl RobotWorld {
         let l = self._robot_set.get_num_robots();
         for i in 0..l {
             let res = self._robot_set
-                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .environment_intersect_check_subset(&subset_check_idxs[i],
                                                   &fk_res.get_robot_fk_results_ref()[i],
@@ -142,7 +142,7 @@ impl RobotWorld {
                                                   &self._collision_environment.as_ref().unwrap(),
                                                   stop_at_first_detected)?;
 
-            let label = format!("environment intersect subset check on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("environment intersect subset check on robot {} ({:?})", i, self._robot_set.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -167,7 +167,7 @@ impl RobotWorld {
         let l = self._robot_set.get_num_robots();
         for i in 0..l {
             let res = self._robot_set
-                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .environment_distance_check_subset(&subset_check_idxs[i],
                                                     &fk_res.get_robot_fk_results_ref()[i],
@@ -175,7 +175,7 @@ impl RobotWorld {
                                                     &self._collision_environment.as_ref().unwrap(),
                                                     stop_at_first_detected)?;
 
-            let label = format!("environment distance check subset on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("environment distance check subset on robot {} ({:?})", i, self._robot_set.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -200,7 +200,7 @@ impl RobotWorld {
         let l = self._robot_set.get_num_robots();
         for i in 0..l {
             let res = self._robot_set
-                .get_robot_module_toolboxes_mut_ref()[i]
+                .get_robots_mut_ref()[i]
                 .get_core_collision_module_mut_ref()
                 .environment_contact_check_subset(&subset_check_idxs[i],
                                                   &fk_res.get_robot_fk_results_ref()[i],
@@ -208,7 +208,7 @@ impl RobotWorld {
                                                   &self._collision_environment.as_ref().unwrap(),
                                            stop_at_first_detected, margin)?;
 
-            let label = format!("environment contact check subset on robot {} ({:?})", i, self._robot_set.get_robot_module_toolboxes_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
+            let label = format!("environment contact check subset on robot {} ({:?})", i, self._robot_set.get_robots_ref()[i].get_configuration_module_ref().robot_model_module.robot_name.clone());
             if stop_at_first_detected && res.is_in_collision() {
                 out_vec.add_new_result(res, label);
                 return Ok(out_vec);
@@ -240,6 +240,26 @@ impl RobotWorld {
             self._collision_environment = Some(CollisionEnvironment::new(environment_name.unwrap())?);
         }
         Ok(())
+    }
+
+    pub fn set_robot_set(&mut self, robot_set: RobotSet) {
+        self._robot_set = robot_set;
+    }
+
+    pub fn set_collision_environment(&mut self, collision_environment: CollisionEnvironment) {
+        self._collision_environment = Some(collision_environment);
+    }
+
+    pub fn absorb_collision_environment(&mut self, collision_environment: CollisionEnvironment) {
+        if self._collision_environment.is_some() {
+            self._collision_environment.as_mut().unwrap().absorb(&collision_environment);
+        } else {
+            self.set_collision_environment(collision_environment);
+        }
+    }
+
+    pub fn remove_collision_environment(&mut self) {
+        self._collision_environment = None;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

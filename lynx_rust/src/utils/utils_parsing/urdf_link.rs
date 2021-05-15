@@ -1,9 +1,11 @@
 use urdf_rs::*;
-use nalgebra::{Vector3, Matrix3};
+use nalgebra::{Vector3, Matrix3, UnitQuaternion};
 use serde::{Serialize, Deserialize};
 use crate::utils::utils_parsing::urdf_parsing_utils::recover_real_mesh_file_path_from_ros_style_reference;
 use crate::utils::utils_files_and_strings::file_utils::recover_filename_from_full_path;
 use crate::utils::utils_files_and_strings::file_utils::get_filename_without_extension;
+use crate::utils::utils_se3::prelude::ImplicitDualQuaternion;
+use crate::utils::utils_parsing::mesh_visual_offset_and_scaling_parsing::{get_single_link_mesh_visual_offset_and_scaling, MeshOffetType};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct URDFLink {
@@ -15,10 +17,18 @@ pub struct URDFLink {
     pub includes_collision_info: bool,
     pub visual_file_name_without_extension: Option<String>,
     pub collision_file_name_without_extension: Option<String>,
+    pub link_visual_mesh_offset: Option<ImplicitDualQuaternion>, // mostly for DAE offset
+    pub link_visual_mesh_scaling: Option<Vector3<f64>>, // mostly for DAE scaling
+    pub link_collision_mesh_offset: Option<ImplicitDualQuaternion>, // mostly for DAE offset
+    pub link_collision_mesh_scaling: Option<Vector3<f64>>, // mostly for DAE scaling,
+    pub link_visual_urdf_offset: Option<ImplicitDualQuaternion>,
+    pub link_visual_urdf_scaling: Option<Vector3<f64>>,
+    pub link_collision_urdf_offset: Option<ImplicitDualQuaternion>,
+    pub link_collision_urdf_scaling: Option<Vector3<f64>>
 }
 
 impl URDFLink {
-    pub fn new_from_urdf_link(link: &Link) -> Self {
+    pub fn new_from_urdf_link(robot_name: &String, link: &Link) -> Self {
         let name = link.name.clone();
         let inertial = URDFLinkInertialInfo::new_from_urdf_link(link);
 
@@ -27,7 +37,7 @@ impl URDFLink {
         for i in 0..l {
             visual.push( URDFLinkGeometryInfo::new_from_urdf_visual(&link.visual[i]) );
         }
-
+        
         let mut collision = Vec::new();
         let l = link.collision.len();
         for i in 0..l {
@@ -38,28 +48,108 @@ impl URDFLink {
         let mut includes_collision_info = collision.len() > 0;
 
         let mut visual_file_name_without_extension = None;
+        let mut link_visual_mesh_offset = Some(ImplicitDualQuaternion::new_identity());
+        let mut link_visual_mesh_scaling = Some(Vector3::new(1.,1.,1.));
         if includes_visual_info {
             let visual_file_name = visual[0].filename.clone();
             if visual_file_name.is_some() {
                 let visual_file_name_unwrap = visual_file_name.unwrap();
-                visual_file_name_without_extension = Some( get_filename_without_extension(visual_file_name_unwrap) );
+                visual_file_name_without_extension = Some( get_filename_without_extension(visual_file_name_unwrap.clone()) );
+
+                let visual_offset_and_scaling = get_single_link_mesh_visual_offset_and_scaling(robot_name.clone(), visual_file_name_unwrap.clone(), MeshOffetType::visual);
+                link_visual_mesh_offset = Some(visual_offset_and_scaling.0);
+                link_visual_mesh_scaling = Some(visual_offset_and_scaling.1);
             }
         }
 
         let mut collision_file_name_without_extension = None;
+        let mut link_collision_mesh_offset = Some(ImplicitDualQuaternion::new_identity());
+        let mut link_collision_mesh_scaling = Some(Vector3::new(1.,1.,1.));
         if includes_collision_info {
             let collision_file_name = collision[0].filename.clone();
             if collision_file_name.is_some() {
                 let collision_file_name_unwrap = collision_file_name.unwrap();
-                collision_file_name_without_extension = Some( get_filename_without_extension(collision_file_name_unwrap) );
+                collision_file_name_without_extension = Some( get_filename_without_extension(collision_file_name_unwrap.clone()) );
+
+                let offset_and_scaling = get_single_link_mesh_visual_offset_and_scaling(robot_name.clone(), collision_file_name_unwrap.clone(), MeshOffetType::collision);
+                link_collision_mesh_offset = Some(offset_and_scaling.0);
+                link_collision_mesh_scaling = Some(offset_and_scaling.1);
             }
         }
 
-        Self { name, inertial, visual, collision, includes_visual_info, includes_collision_info, visual_file_name_without_extension, collision_file_name_without_extension }
+        let mut link_visual_urdf_offset = Some(ImplicitDualQuaternion::new_identity());
+        let mut link_visual_urdf_scaling = Some(Vector3::new(1.,1.,1.));
+        if includes_visual_info {
+            let v = &visual[0];
+            let origin_xyz = &v.origin_xyz;
+            let origin_rpy = &v.origin_rpy;
+            let quat = UnitQuaternion::from_euler_angles(origin_rpy[0], origin_rpy[1], origin_rpy[2]);
+            let idq = ImplicitDualQuaternion::new(quat, origin_xyz.into_owned());
+            link_visual_urdf_offset = Some(idq);
+            link_visual_urdf_scaling = v.scale.clone();
+        }
+
+        let mut link_collision_urdf_offset = Some(ImplicitDualQuaternion::new_identity());
+        let mut link_collision_urdf_scaling = Some(Vector3::new(1.,1.,1.));
+        if includes_collision_info {
+            let v = &collision[0];
+            let origin_xyz = &v.origin_xyz;
+            let origin_rpy = &v.origin_rpy;
+            let quat = UnitQuaternion::from_euler_angles(origin_rpy[0], origin_rpy[1], origin_rpy[2]);
+            let idq = ImplicitDualQuaternion::new(quat, origin_xyz.into_owned());
+            link_collision_urdf_offset = Some(idq);
+            link_collision_urdf_scaling = v.scale.clone();
+        }
+
+        /*
+        if includes_collision_info {
+            let collision_file_name = collision[0].filename.clone();
+            if collision_file_name.is_some() {
+                let collision_file_name_unwrap = collision_file_name.unwrap();
+                collision_file_name_without_extension = Some( get_filename_without_extension(collision_file_name_unwrap.clone()) );
+
+                let visual_offset_and_scaling = get_single_link_mesh_visual_offset_and_scaling(robot_name.clone(), collision_file_name_unwrap.clone(), MeshOffetType::collision);
+                link_collision_mesh_offset = Some(visual_offset_and_scaling.0);
+                link_collision_mesh_scaling = Some(visual_offset_and_scaling.1);
+            }
+        }
+        */
+
+        Self { name,
+            inertial,
+            visual,
+            collision,
+            includes_visual_info,
+            includes_collision_info,
+            visual_file_name_without_extension,
+            collision_file_name_without_extension,
+            link_visual_mesh_offset,
+            link_visual_mesh_scaling,
+            link_collision_mesh_offset,
+            link_collision_mesh_scaling,
+            link_visual_urdf_offset,
+            link_visual_urdf_scaling,
+            link_collision_urdf_offset,
+            link_collision_urdf_scaling }
     }
 
     pub fn new_empty() -> Self {
-        return Self{name: "".to_string(), inertial: URDFLinkInertialInfo::new_empty(), visual: Vec::new(), collision: Vec::new(), includes_visual_info: false, includes_collision_info: false, visual_file_name_without_extension: None, collision_file_name_without_extension: None };
+        return Self{name: "".to_string(),
+            inertial: URDFLinkInertialInfo::new_empty(),
+            visual: Vec::new(), collision: Vec::new(),
+            includes_visual_info: false,
+            includes_collision_info: false,
+            visual_file_name_without_extension: None,
+            collision_file_name_without_extension: None,
+            link_visual_mesh_offset: Some(ImplicitDualQuaternion::new_identity()),
+            link_visual_mesh_scaling: None,
+            link_collision_mesh_offset: Some(ImplicitDualQuaternion::new_identity()),
+            link_collision_mesh_scaling: None,
+            link_visual_urdf_offset: Some(ImplicitDualQuaternion::new_identity()),
+            link_visual_urdf_scaling: None,
+            link_collision_urdf_offset: Some(ImplicitDualQuaternion::new_identity()),
+            link_collision_urdf_scaling: None
+        };
     }
 }
 
@@ -102,7 +192,6 @@ impl URDFLinkInertialInfo {
         return Self { included: false, origin_xyz: Vector3::zeros(), origin_rpy: Vector3::zeros(), mass: 0.0, inertia_matrix: Matrix3::zeros() };
     }
 }
-
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct URDFLinkGeometryInfo {

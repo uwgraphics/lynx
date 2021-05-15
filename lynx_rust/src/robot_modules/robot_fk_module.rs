@@ -204,7 +204,6 @@ impl RobotFKModule {
     }
 }
 
-
 #[derive(Clone, Debug)]
 pub struct RobotFKResult {
     _x: DVector<f64>,
@@ -243,7 +242,6 @@ impl VecOfRobotFKResult {
         return &self._robot_fk_result;
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct RobotFKGradientPerturbationsResult {

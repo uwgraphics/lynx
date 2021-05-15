@@ -58,7 +58,7 @@ impl RobotModelModule {
 
         let link_tree_traversal_layers = Vec::new();
 
-        let mut robot_model_module = Self { robot_name, links, joints, world_link_idx: usize::max_value(), link_tree_traversal_layers, link_tree_max_depth: 0, _link_name_to_idx_hashmap, _joint_name_to_idx_hashmap };
+        let mut robot_model_module = Self { robot_name, links, joints, world_link_idx: usize::MAX, link_tree_traversal_layers, link_tree_max_depth: 0, _link_name_to_idx_hashmap, _joint_name_to_idx_hashmap };
 
         // finalize model
         robot_model_module._assign_all_link_connections_manual();

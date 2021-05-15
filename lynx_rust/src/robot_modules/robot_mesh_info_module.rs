@@ -1,3 +1,5 @@
+
+/*
 use crate::robot_modules::robot_configuration_module::RobotConfigurationModule;
 use crate::utils::utils_files_and_strings::prelude::*;
 use crate::utils::utils_se3::implicit_dual_quaternion::ImplicitDualQuaternion;
@@ -15,7 +17,9 @@ pub struct RobotMeshInfoModule {
     _has_visual_base_meshes: bool,
     _has_collision_triangle_meshes: bool,
     _has_visual_triangle_meshes: bool,
-    _link_mesh_visual_offsets: Vec<Option<ImplicitDualQuaternion>> // mostly for DAE collada files, where the mesh may be shifted off center in the file, even though the origin point of the mesh is somewhere else.  E.g., the Panda DAE links.
+    _link_mesh_visual_offsets: Vec<Option<ImplicitDualQuaternion>>, // mostly for DAE collada files, where the mesh may be shifted off center in the file, even though the origin point of the mesh is somewhere else.  E.g., the Panda DAE links.
+    _link_mesh_visual_scalings: Vec<Option<Vector3<f64>>>,
+    _link_mesh_urdf_visual_offsets: Vec<Option<ImplicitDualQuaternion>>
 }
 
 impl RobotMeshInfoModule {
@@ -23,10 +27,13 @@ impl RobotMeshInfoModule {
         let _robot_name = robot_configuration_module.robot_model_module.robot_name.to_string();
 
         let mut out_self = Self { _robot_name, _has_collision_base_meshes: false, _has_visual_base_meshes: false,
-            _has_collision_triangle_meshes: false, _has_visual_triangle_meshes: false, _link_mesh_visual_offsets: Vec::new()  };
+            _has_collision_triangle_meshes: false, _has_visual_triangle_meshes: false,
+            _link_mesh_visual_offsets: Vec::new(), _link_mesh_visual_scalings: Vec::new(),
+            _link_mesh_urdf_visual_offsets: Vec::new()  };
 
         out_self.check_and_reset_all_mesh_infos();
-        out_self._set_link_mesh_visual_offsets(robot_configuration_module);
+        out_self._set_link_mesh_visual_offsets_and_scalings(robot_configuration_module);
+        out_self._set_link_urdf_visual_offsets(robot_configuration_module);
 
         return out_self;
     }
@@ -66,149 +73,40 @@ impl RobotMeshInfoModule {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    fn _set_link_mesh_visual_offsets(&mut self, robot_configuration_module: &RobotConfigurationModule) {
+    fn _set_link_mesh_visual_offsets_and_scalings(&mut self, robot_configuration_module: &RobotConfigurationModule) {
         let links = &robot_configuration_module.robot_model_module.links;
         let l = links.len();
 
         for i in 0..l {
-            if links[i].urdf_link.visual_file_name_without_extension.is_none() { self._link_mesh_visual_offsets.push(None) }
+            if links[i].urdf_link.visual_file_name_without_extension.is_none() {
+                self._link_mesh_visual_offsets.push(Some(ImplicitDualQuaternion::new_identity()));
+                self._link_mesh_visual_scalings.push(Some(Vector3::new(1.,1.,1.)));
+            }
             else {
                 let filename = links[i].urdf_link.visual[0].filename.as_ref().unwrap();
                 let filename_extension = get_filename_extension(filename.to_string());
                 match filename_extension.as_str() {
                     "dae" => {
-                        self._link_mesh_visual_offsets.push( Some(Self::_get_single_link_mesh_visual_offset_from_dae(robot_configuration_module, filename.clone())) );
+                        let res = Self::_get_single_link_mesh_visual_offset_and_scaling_from_dae(robot_configuration_module.robot_model_module.robot_name.clone(), filename.clone());
+                        self._link_mesh_visual_offsets.push( Some(res.0) );
+                        self._link_mesh_visual_scalings.push(Some(res.1) );
                     },
                     "DAE" => {
-                        self._link_mesh_visual_offsets.push( Some(Self::_get_single_link_mesh_visual_offset_from_dae(robot_configuration_module, filename.clone())) );
+                        let res = Self::_get_single_link_mesh_visual_offset_and_scaling_from_dae(robot_configuration_module.robot_model_module.robot_name.clone(), filename.clone());
+                        self._link_mesh_visual_offsets.push( Some(res.0) );
+                        self._link_mesh_visual_scalings.push(Some(res.1) );
                     },
-                    _ => { self._link_mesh_visual_offsets.push(Some(ImplicitDualQuaternion::new_identity())); }
-                }
-            }
-        }
-    }
-
-    /*
-    fn _get_single_link_mesh_visual_offset_from_dae(robot_configuration_module: &RobotConfigurationModule, filename: String) -> ImplicitDualQuaternion {
-        let fp = get_path_to_particular_robot_directory(robot_configuration_module.robot_model_module.robot_name.to_string()) + "/base_meshes/visual/" + filename.as_str();
-        let path = Path::new(&fp);
-        let doc = ColladaDocument::from_path(&path).expect(format!("Collada file {:?} could not be parsed in robot_mesh_info_module", fp).as_str());
-
-        let mut object_id = "".to_string();
-
-        let o = doc.get_obj_set().unwrap().clone();
-        if o.objects.len() > 0 {
-            object_id = o.objects[0].id.clone();
-        }
-        println!("{:?}", object_id);
-
-        let mut matrix_string = "".to_string();
-        let mut string_set = false;
-
-        let a = doc.root_element.children.clone();
-        for i in 0..a.len() {
-            match &a[i] {
-                ElementNode(e) => {
-                    if e.name == "library_visual_scenes" {
-                        let a2 = &e.children;
-                        for i in 0..a2.len() {
-                            match &a2[i] {
-                                ElementNode(e2) => {
-                                    let a3 = &e2.children;
-                                    for i in 0..a3.len() {
-                                        match &a3[i] {
-                                            ElementNode(e3) => {
-                                                // let id_string = e3.attributes[&("id".to_string(), None)].clone();
-                                                // println!("{:?}, {:?}, {:?}", id_string, object_name, id_string == object_name);
-                                                // if !(id_string == object_name) { continue; }
-                                                if e3.name == "node" {
-                                                    let a4 = &e3.children;
-                                                    let mut url = "".to_string();
-
-                                                    for i in 0..a4.len() {
-
-                                                        match &a4[i] {
-                                                            ElementNode(e4) => {
-                                                                let mut url = e4.attributes.get(&("url".to_string(), None));
-                                                                if url.is_none() { continue; }
-                                                                let url_unwrap = url.unwrap();
-                                                                if url_unwrap.contains(&object_id.clone()) {
-                                                                    if e4.name == "matrix" {
-                                                                    let a5 = &e4.children;
-                                                                    for i in 0..a5.len() {
-                                                                        match &a5[i] {
-                                                                            CharacterNode(s) => {
-                                                                                if !string_set {
-                                                                                    matrix_string = s.clone();
-                                                                                    string_set = true;
-                                                                                }
-                                                                            }
-                                                                            _ => {}
-                                                                        }
-                                                                    }
-                                                                }
-                                                                }
-                                                            }
-                                                            _ => { }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            _ => { }
-                                        }
-                                    }
-                                }
-                                _ => { }
-                            }
-                        }
+                    _ => {
+                        self._link_mesh_visual_offsets.push( Some(ImplicitDualQuaternion::new_identity()) );
+                        self._link_mesh_visual_scalings.push( Some(Vector3::new(1.,1.,1.) ));
                     }
                 }
-                _ => { }
             }
-        }
-
-        let split: Vec<&str> = matrix_string.split(" ").collect();
-
-        let mut floats = Vec::new();
-
-        let l = split.len();
-        for i in 0..l {
-            let f = split[i].parse::<f64>();
-            if f.is_ok() {
-                floats.push(f.ok().unwrap());
-            }
-        }
-
-        if !(floats.len() == 16) {
-            return ImplicitDualQuaternion::new_identity();
-        } else {
-            let mut mat = Matrix3::new(0.,0.,0.,0.,0.,0.,0.,0.,0.);
-            let mut vec = Vector3::new(0.,0.,0.);
-            mat[(0,0)] = floats[0];
-            mat[(0,1)] = floats[1];
-            mat[(0,2)] = floats[2];
-            vec[0] = floats[3];
-
-            mat[(1,0)] = floats[4];
-            mat[(1,1)] = floats[5];
-            mat[(1,2)] = floats[6];
-            vec[1] = floats[7];
-
-            mat[(2,0)] = floats[8];
-            mat[(2,1)] = floats[9];
-            mat[(2,2)] = floats[10];
-            vec[2] = floats[11];
-
-            let quat : UnitQuaternion<f64> = UnitQuaternion::from_matrix(&mat);
-            let idq = ImplicitDualQuaternion::new(quat, vec);
-
-            return idq;
         }
     }
-    */
 
-    fn _get_single_link_mesh_visual_offset_from_dae(robot_configuration_module: &RobotConfigurationModule, filename: String) -> ImplicitDualQuaternion {
-        let fp = get_path_to_particular_robot_directory(robot_configuration_module.robot_model_module.robot_name.to_string()) + "/base_meshes/visual/" + filename.as_str();
+    fn _get_single_link_mesh_visual_offset_and_scaling_from_dae(robot_name: String, filename: String) -> (ImplicitDualQuaternion, Vector3<f64>) {
+        let fp = get_path_to_particular_robot_directory(robot_name) + "/base_meshes/visual/" + filename.as_str();
         let path = Path::new(&fp);
         let doc = ColladaDocument::from_path(&path).expect(format!("Collada file {:?} could not be parsed in robot_mesh_info_module", fp).as_str());
 
@@ -220,6 +118,12 @@ impl RobotMeshInfoModule {
         }
 
         let mut matrix_string = "".to_string();
+        let mut translate_string = "".to_string();
+        let mut rotateZ_string = "".to_string();
+        let mut rotateY_string = "".to_string();
+        let mut rotateX_string = "".to_string();
+        let mut scale_string = "".to_string();
+
         let mut string_set = false;
 
         let v1 = &doc.root_element.children;
@@ -262,6 +166,44 @@ impl RobotMeshInfoModule {
                                                                                 _ => { }
                                                                             }
                                                                         } // end of v5 loop
+                                                                    } else if e.name == "translate" {
+                                                                        let v5 = &e.children;
+                                                                        for a in v5 {
+                                                                            match a {
+                                                                                CharacterNode(s) => {
+                                                                                    translate_string = s.clone();
+                                                                                },
+                                                                                _ => { }
+                                                                            }
+                                                                        } // end of v5 loop
+                                                                    } else if e.name == "scale" {
+                                                                        let v5 = &e.children;
+                                                                        for a in v5 {
+                                                                            match a {
+                                                                                CharacterNode(s) => {
+                                                                                    scale_string = s.clone();
+                                                                                },
+                                                                                _ => { }
+                                                                            }
+                                                                        } // end of v5 loop
+                                                                    } else if e.name == "rotate" {
+                                                                        let sid_ = e.attributes.get(&("sid".to_string(), None));
+                                                                        let v5 = &e.children;
+                                                                        for a in v5 {
+                                                                            match a {
+                                                                                CharacterNode(s) => {
+                                                                                    match sid_ {
+                                                                                        None => { }
+                                                                                        Some(sid) => {
+                                                                                            if sid == "rotateX" { rotateX_string = s.clone() }
+                                                                                            else if sid == "rotateY" { rotateY_string = s.clone() }
+                                                                                            else if sid == "rotateZ" { rotateZ_string = s.clone() }
+                                                                                        }
+                                                                                    }
+                                                                                },
+                                                                                _ => { }
+                                                                            }
+                                                                        }
                                                                     }
                                                                 },
                                                                 _ => { }
@@ -269,8 +211,12 @@ impl RobotMeshInfoModule {
                                                         } // end of v4 for loop
 
                                                         // make decision here
-                                                        if url_local.contains(&object_id) {
+                                                        if url_local.contains(&object_id) && matrix_string_local.len() > 0 {
                                                             matrix_string = matrix_string_local.clone();
+                                                            string_set = true;
+                                                        }
+
+                                                        if url_local.contains(&object_id) && (scale_string.len() > 0 || translate_string.len() > 0 || rotateX_string.len() > 0 || rotateY_string.len() > 0 || rotateZ_string.len() > 0 ) {
                                                             string_set = true;
                                                         }
 
@@ -290,45 +236,154 @@ impl RobotMeshInfoModule {
             } // end of v1 match
         } // end of v1 for loop
 
-        let split: Vec<&str> = matrix_string.split(" ").collect();
+        if !(matrix_string == "") {
+            let split: Vec<&str> = matrix_string.split(" ").collect();
 
-        let mut floats = Vec::new();
+            let mut floats = Vec::new();
 
-        let l = split.len();
-        for i in 0..l {
-            let f = split[i].parse::<f64>();
-            if f.is_ok() {
-                floats.push(f.ok().unwrap());
+            let l = split.len();
+            for i in 0..l {
+                let f = split[i].parse::<f64>();
+                if f.is_ok() {
+                    floats.push(f.ok().unwrap());
+                }
             }
-        }
 
-        if !(floats.len() == 16) {
-            return ImplicitDualQuaternion::new_identity();
+            if !(floats.len() == 16) {
+                return (ImplicitDualQuaternion::new_identity(), Vector3::new(1., 1., 1.));
+            } else {
+                let mut mat = Matrix3::new(0., 0., 0., 0., 0., 0., 0., 0., 0.);
+                let mut vec = Vector3::new(0., 0., 0.);
+                mat[(0, 0)] = floats[0];
+                mat[(0, 1)] = floats[1];
+                mat[(0, 2)] = floats[2];
+                vec[0] = floats[3];
+
+                mat[(1, 0)] = floats[4];
+                mat[(1, 1)] = floats[5];
+                mat[(1, 2)] = floats[6];
+                vec[1] = floats[7];
+
+                mat[(2, 0)] = floats[8];
+                mat[(2, 1)] = floats[9];
+                mat[(2, 2)] = floats[10];
+                vec[2] = floats[11];
+
+                let scaling1 = Vector3::new(mat[(0, 0)], mat[(1, 0)], mat[(2, 0)]).norm();
+                let scaling2 = Vector3::new(mat[(0, 1)], mat[(1, 1)], mat[(2, 1)]).norm();
+                let scaling3 = Vector3::new(mat[(0, 2)], mat[(1, 2)], mat[(2, 2)]).norm();
+                let scaling = Vector3::new(scaling1, scaling2, scaling3);
+
+                let quat: UnitQuaternion<f64> = UnitQuaternion::from_matrix(&mat);
+                let idq = ImplicitDualQuaternion::new(quat, vec);
+
+                return (idq, scaling);
+            }
         } else {
-            let mut mat = Matrix3::new(0.,0.,0.,0.,0.,0.,0.,0.,0.);
-            let mut vec = Vector3::new(0.,0.,0.);
-            mat[(0,0)] = floats[0];
-            mat[(0,1)] = floats[1];
-            mat[(0,2)] = floats[2];
-            vec[0] = floats[3];
+            let split: Vec<&str> = translate_string.split(" ").collect();
+            let mut translate_floats = Vec::new();
+            let l = split.len();
+            for i in 0..l {
+                let f = split[i].parse::<f64>();
+                if f.is_ok() {
+                    translate_floats.push(f.ok().unwrap());
+                }
+            }
 
-            mat[(1,0)] = floats[4];
-            mat[(1,1)] = floats[5];
-            mat[(1,2)] = floats[6];
-            vec[1] = floats[7];
+            let split: Vec<&str> = rotateX_string.split(" ").collect();
+            let mut rotateX_floats = Vec::new();
+            let l = split.len();
+            for i in 0..l {
+                let f = split[i].parse::<f64>();
+                if f.is_ok() {
+                    rotateX_floats.push(f.ok().unwrap());
+                }
+            }
 
-            mat[(2,0)] = floats[8];
-            mat[(2,1)] = floats[9];
-            mat[(2,2)] = floats[10];
-            vec[2] = floats[11];
+            let split: Vec<&str> = rotateY_string.split(" ").collect();
+            let mut rotateY_floats = Vec::new();
+            let l = split.len();
+            for i in 0..l {
+                let f = split[i].parse::<f64>();
+                if f.is_ok() {
+                    rotateY_floats.push(f.ok().unwrap());
+                }
+            }
 
-            let quat : UnitQuaternion<f64> = UnitQuaternion::from_matrix(&mat);
+            let split: Vec<&str> = rotateZ_string.split(" ").collect();
+            let mut rotateZ_floats = Vec::new();
+            let l = split.len();
+            for i in 0..l {
+                let f = split[i].parse::<f64>();
+                if f.is_ok() {
+                    rotateZ_floats.push(f.ok().unwrap());
+                }
+            }
+
+            let split: Vec<&str> = scale_string.split(" ").collect();
+            let mut scale_floats = Vec::new();
+            let l = split.len();
+            for i in 0..l {
+                let f = split[i].parse::<f64>();
+                if f.is_ok() {
+                    scale_floats.push(f.ok().unwrap());
+                }
+            }
+
+            let mut mat = Matrix3::new(0., 0., 0., 0., 0., 0., 0., 0., 0.);
+            let mut vec = Vector3::new(0., 0., 0.);
+
+            if rotateX_floats.len() > 2 {
+                mat[(0,0)] = rotateX_floats[0];
+                mat[(1,0)] = rotateX_floats[1];
+                mat[(2,0)] = rotateX_floats[2];
+            }
+            if rotateY_floats.len() > 2 {
+                mat[(0,1)] = rotateY_floats[0];
+                mat[(1,1)] = rotateY_floats[1];
+                mat[(2,1)] = rotateY_floats[2];
+            }
+            if rotateZ_floats.len() > 2 {
+                mat[(0,2)] = rotateZ_floats[0];
+                mat[(1,2)] = rotateZ_floats[1];
+                mat[(2,2)] = rotateZ_floats[2];
+            }
+            if translate_floats.len() > 2 {
+                vec[0] = translate_floats[0];
+                vec[1] = translate_floats[1];
+                vec[2] = translate_floats[2];
+            }
+
+            let mut scaling = Vector3::new(1.,1.,1.);
+            if scale_floats.len() > 2 {
+                scaling[0] = scale_floats[0];
+                scaling[1] = scale_floats[1];
+                scaling[2] = scale_floats[2];
+            }
+
+            let quat: UnitQuaternion<f64> = UnitQuaternion::from_matrix(&mat);
             let idq = ImplicitDualQuaternion::new(quat, vec);
 
-            return idq;
+            return (idq, scaling);
         }
+    }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    fn _set_link_urdf_visual_offsets(&mut self, robot_configuration_module: &RobotConfigurationModule) {
+        let links = &robot_configuration_module.robot_model_module.links;
+        for l in links {
+            if l.urdf_link.includes_visual_info {
+                let v = &l.urdf_link.visual[0];
+                let origin_xyz = &v.origin_xyz;
+                let origin_rpy = &v.origin_rpy;
+                let quat = UnitQuaternion::from_euler_angles(origin_rpy[0], origin_rpy[1], origin_rpy[2]);
+                let idq = ImplicitDualQuaternion::new(quat, origin_xyz.into_owned());
+                self._link_mesh_urdf_visual_offsets.push(Some(idq));
+            } else {
+                self._link_mesh_urdf_visual_offsets.push(Some(ImplicitDualQuaternion::new_identity()));
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -352,4 +407,13 @@ impl RobotMeshInfoModule {
     pub fn get_link_mesh_visual_offsets(&self) -> &Vec<Option<ImplicitDualQuaternion>> {
         return &self._link_mesh_visual_offsets;
     }
+
+    pub fn get_link_mesh_visual_scalings(&self) -> &Vec<Option<Vector3<f64>>> {
+        return &self._link_mesh_visual_scalings
+    }
+
+    pub fn get_link_urdf_visual_offsets(&self) -> &Vec<Option<ImplicitDualQuaternion>> {
+        return &self._link_mesh_urdf_visual_offsets;
+    }
 }
+*/
