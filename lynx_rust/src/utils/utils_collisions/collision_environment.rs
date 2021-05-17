@@ -218,6 +218,7 @@ impl CollisionEnvironment {
         let l = self.environment_obbs[idx].len();
         for i in 0..l {
             self.environment_obbs[idx][i].set_curr_pose(new_transform);
+            self.environment_obbs[idx][i].update_all_bounding_volumes();
         }
 
         Ok(())

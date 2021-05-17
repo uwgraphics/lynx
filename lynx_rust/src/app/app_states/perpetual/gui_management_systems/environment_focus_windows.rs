@@ -26,10 +26,8 @@ pub fn environment_focus_windows_system(mut env_entity_and_info_server: ResMut<E
                                         mut transform_query: Query<(&mut Transform)>,
                                         mut spawn_new_environment: ResMut<SpawnNewEnvironment>) {
     if current_main_gui_values.environment_selectable {
-        let mut robot_world = get_lynx_var_mut_ref_generic!(&mut *lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world");
-        let collision_environment_ = robot_world.get_collision_environment_option_mut_ref();
-        if collision_environment_.is_none() { return; }
-        let collision_environment = collision_environment_.as_mut().unwrap();
+        let mut robot_worlds = get_lynx_var_all_mut_refs_generic!(&mut *lynx_vars, RobotWorld, "robot_world");
+        if robot_worlds[0].get_collision_environment_option_mut_ref().is_none() { return; }
 
         let env_objects_with_focus = env_entity_and_info_server.get_env_objects_with_focus().clone();
         let l = env_objects_with_focus.len();
@@ -68,46 +66,60 @@ pub fn environment_focus_windows_system(mut env_entity_and_info_server: ResMut<E
                     }
 
                     egui::CollapsingHeader::new("Object Name").default_open(true).show(ui, |ui| {
-                        ui.label(collision_environment.object_names[env_object_idx].clone());
+                        ui.label(robot_worlds[0].get_collision_environment_option_ref().as_ref().unwrap().object_names[env_object_idx].clone());
                     });
 
                     let translation_labels = vec!["Position X", "Position Y", "Position Z"];
+                    let mut translation = robot_worlds[0].get_collision_environment_option_ref().as_ref().unwrap().transforms[env_object_idx].translation.clone();
 
                     for i in 0..3 {
                         egui::CollapsingHeader::new(translation_labels[i]).default_open(true).show(ui, |ui| {
-                            ui.add(egui::Slider::new(&mut collision_environment.transforms[env_object_idx].translation[i], -5.0..=5.0));
-                            _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                            ui.add(egui::Slider::new(&mut translation[i], -5.0..=5.0));
+                            for r in &mut robot_worlds {
+                                r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].translation[i] = translation[i];
+                            }
+                            _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
 
                             ui.horizontal(|ui| {
                                 if ui.button("0.0").clicked() {
-                                    collision_environment.transforms[env_object_idx].translation[i] = 0.0;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].translation[i] = 0.0;
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("+.1").clicked() {
-                                    collision_environment.transforms[env_object_idx].translation[i] += 0.1;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].translation[i] += 0.1;
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("-.1").clicked() {
-                                    collision_environment.transforms[env_object_idx].translation[i] -= 0.1;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].translation[i] -= 0.1;
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("+.01").clicked() {
-                                    collision_environment.transforms[env_object_idx].translation[i] += 0.01;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].translation[i] += 0.01;
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("-.01").clicked() {
-                                    collision_environment.transforms[env_object_idx].translation[i] -= 0.01;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].translation[i] -= 0.01;
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
                             });
                         });
                     }
 
-                    let quat = collision_environment.transforms[env_object_idx].quat.clone();
+                    let quat = robot_worlds[0].get_collision_environment_option_ref().as_ref().unwrap().transforms[env_object_idx].quat.clone();
                     let mut euler_angles_tuple = quat.euler_angles();
                     let mut euler_angles = vec![euler_angles_tuple.0, euler_angles_tuple.1, euler_angles_tuple.2];
                     let rotation_labels = vec!["Rotation X", "Rotation Y", "Rotation Z"];
@@ -116,43 +128,55 @@ pub fn environment_focus_windows_system(mut env_entity_and_info_server: ResMut<E
                         egui::CollapsingHeader::new(rotation_labels[i]).default_open(true).show(ui, |ui| {
                             ui.add(egui::Slider::new(&mut euler_angles[i], -2.0 * std::f64::consts::PI..=2.0 * std::f64::consts::PI));
                             let new_quat = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
-                            collision_environment.transforms[env_object_idx].quat = new_quat;
-                            _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                            for r in &mut robot_worlds {
+                                r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].quat = new_quat.clone();
+                            }
+                            _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
 
                             ui.horizontal(|ui| {
                                 if ui.button("0.0").clicked() {
                                     euler_angles[i] = 0.0;
                                     let new_quat = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
-                                    collision_environment.transforms[env_object_idx].quat = new_quat;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].quat = new_quat.clone();
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("+pi/2").clicked() {
                                     euler_angles[i] += std::f64::consts::FRAC_PI_2;
                                     let new_quat = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
-                                    collision_environment.transforms[env_object_idx].quat = new_quat;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].quat = new_quat.clone();
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("-pi/2").clicked() {
                                     euler_angles[i] -= std::f64::consts::FRAC_PI_2;
                                     let new_quat = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
-                                    collision_environment.transforms[env_object_idx].quat = new_quat;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].quat = new_quat.clone();
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("+.1").clicked() {
                                     euler_angles[i] += 0.1;
                                     let new_quat = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
-                                    collision_environment.transforms[env_object_idx].quat = new_quat;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].quat = new_quat.clone();
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
 
                                 if ui.button("-.1").clicked() {
                                     euler_angles[i] -= 0.1;
                                     let new_quat = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
-                                    collision_environment.transforms[env_object_idx].quat = new_quat;
-                                    _update_environment_object_transform(entity_pack, collision_environment, env_object_idx, &mut transform_query);
+                                    for r in &mut robot_worlds {
+                                        r.get_collision_environment_option_mut_ref().as_mut().unwrap().transforms[env_object_idx].quat = new_quat.clone();
+                                    }
+                                    _update_environment_object_transform(entity_pack, &mut robot_worlds, env_object_idx, &mut transform_query);
                                 }
                             });
                         });
@@ -161,12 +185,18 @@ pub fn environment_focus_windows_system(mut env_entity_and_info_server: ResMut<E
                     egui::CollapsingHeader::new("Object Tools").default_open(true).show(ui, |ui| {
                         ui.horizontal(|ui| {
                             if ui.button("Delete").clicked() {
-                                collision_environment.delete_object_by_idx(env_object_idx);
+                                // collision_environment.delete_object_by_idx(env_object_idx);
+                                for r in &mut robot_worlds {
+                                    r.get_collision_environment_option_mut_ref().as_mut().unwrap().delete_object_by_idx(env_object_idx);
+                                }
                                 spawn_new_environment.0 = true;
                             }
 
                             if ui.button("Duplicate").clicked() {
-                                collision_environment.duplicate_object_by_idx(env_object_idx);
+                                // collision_environment.duplicate_object_by_idx(env_object_idx);
+                                for r in &mut robot_worlds {
+                                    r.get_collision_environment_option_mut_ref().as_mut().unwrap().duplicate_object_by_idx(env_object_idx);
+                                }
                                 spawn_new_environment.0 = true;
                             }
                         });
@@ -206,31 +236,37 @@ pub fn environment_focus_windows_system(mut env_entity_and_info_server: ResMut<E
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn _update_environment_object_transform(entity_pack: &EnvObjectEntityPack,
-                                        collision_environment: &mut CollisionEnvironment,
+                                        robot_worlds: &mut Vec<&mut RobotWorld>,
                                         env_object_idx: usize,
                                         transform_query: &mut Query<(&mut Transform)>) {
-    collision_environment.update_object_transform_by_idx(env_object_idx, &collision_environment.transforms[env_object_idx].clone());
-    if entity_pack.visible_glb_scene_env_object_entity.is_some() {
-        let e = entity_pack.visible_glb_scene_env_object_entity.as_ref().unwrap();
-        let mut q = transform_query.get_mut(e.clone()).expect("error");
-        let new_t = convert_z_up_idq_to_y_up_bevy_transform(&collision_environment.transforms[env_object_idx].clone());
-        q.translation = new_t.translation;
-        q.rotation = new_t.rotation;
-    }
+    for r in robot_worlds {
+        let mut collision_environment_ = r.get_collision_environment_option_mut_ref();
+        if collision_environment_.is_none() { return; } else {
+            let mut collision_environment = collision_environment_.as_mut().unwrap();
+            collision_environment.update_object_transform_by_idx(env_object_idx, &collision_environment.transforms[env_object_idx].clone());
+            if entity_pack.visible_glb_scene_env_object_entity.is_some() {
+                let e = entity_pack.visible_glb_scene_env_object_entity.as_ref().unwrap();
+                let mut q = transform_query.get_mut(e.clone()).expect("error");
+                let new_t = convert_z_up_idq_to_y_up_bevy_transform(&collision_environment.transforms[env_object_idx].clone());
+                q.translation = new_t.translation;
+                q.rotation = new_t.rotation;
+            }
 
-    if entity_pack.standard_material_env_object_entity.is_some() {
-        let e = entity_pack.standard_material_env_object_entity.as_ref().unwrap();
-        let mut q = transform_query.get_mut(e.clone()).expect("error");
-        let new_t = convert_z_up_idq_to_y_up_bevy_transform(&collision_environment.transforms[env_object_idx].clone());
-        q.translation = new_t.translation;
-        q.rotation = new_t.rotation;
-    }
+            if entity_pack.standard_material_env_object_entity.is_some() {
+                let e = entity_pack.standard_material_env_object_entity.as_ref().unwrap();
+                let mut q = transform_query.get_mut(e.clone()).expect("error");
+                let new_t = convert_z_up_idq_to_y_up_bevy_transform(&collision_environment.transforms[env_object_idx].clone());
+                q.translation = new_t.translation;
+                q.rotation = new_t.rotation;
+            }
 
-    if entity_pack.invisible_material_env_object_entity.is_some() {
-        let e = entity_pack.invisible_material_env_object_entity.as_ref().unwrap();
-        let mut q = transform_query.get_mut(e.clone()).expect("error");
-        let new_t = convert_z_up_idq_to_y_up_bevy_transform(&collision_environment.transforms[env_object_idx].clone());
-        q.translation = new_t.translation;
-        q.rotation = new_t.rotation;
+            if entity_pack.invisible_material_env_object_entity.is_some() {
+                let e = entity_pack.invisible_material_env_object_entity.as_ref().unwrap();
+                let mut q = transform_query.get_mut(e.clone()).expect("error");
+                let new_t = convert_z_up_idq_to_y_up_bevy_transform(&collision_environment.transforms[env_object_idx].clone());
+                q.translation = new_t.translation;
+                q.rotation = new_t.rotation;
+            }
+        }
     }
 }

@@ -13,6 +13,9 @@ use std::slice::{Iter, IterMut};
 use termion::{style, color};
 use yaml_rust::yaml::Yaml::Null;
 use nalgebra::{UnitQuaternion, Vector3};
+use crate::utils::utils_vars::prelude::*;
+use crate::utils::utils_sampling::prelude::*;
+use crate::utils::utils_math::prelude::vec_to_dvec;
 
 
 #[derive(Clone, Debug)]
@@ -627,4 +630,26 @@ impl RobotSet {
     pub fn get_num_robots(&self) -> usize { return self._num_robots; }
 }
 
+impl FloatVecSampler for RobotSet {
+    fn float_vec_sampler_sample(&self) -> Result<DVector<f64>, String> {
+        let mut out_vec = Vec::new();
+        let l = self._num_robots;
+        for i in 0..l {
+            let s = self._robots[i].get_bounds_module_ref().uniform_sample_from_bounds();
+            let l2 = s.data.len();
+            for j in 0..l2 {
+                out_vec.push(s[j]);
+            }
+        }
 
+        return Ok(vec_to_dvec(&out_vec));
+    }
+}
+impl LynxFloatVecSampler for RobotSet {
+    fn lynx_float_vec_sampler_sample(&self, lynx_vars: &mut LynxVarsGeneric) -> Result<DVector<f64>, String> {
+        return self.float_vec_sampler_sample();
+    }
+}
+impl LynxMultiFloatVecSampler for RobotSet { }
+impl MultiFloatVecSampler for RobotSet { }
+impl LynxVarsUser for RobotSet { }

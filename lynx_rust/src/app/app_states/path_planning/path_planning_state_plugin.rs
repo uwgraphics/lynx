@@ -9,6 +9,7 @@ use crate::app::app_utils::asset_utils::robot_set_asset_loader::RobotSetAssetLoa
 use crate::app::app_states::path_planning::path_planning_gui::path_planning_gui_plugin::PathPlanningGUIPlugin;
 use crate::app::app_states::path_planning::path_planning_on_update_systems::path_planning_on_update_systems_plugin::PathPlanningOnUpdateSystemsPlugin;
 use crate::app::app_states::path_planning::path_planning_gui::path_planning_gui_values::PathPlanningGUIValues;
+use crate::app::app_states::path_planning::path_planning_res_comps::PathPlanningPlaybackPack;
 
 pub struct PathPlanningStatePlugin;
 
@@ -49,20 +50,23 @@ pub fn path_planning_enter_generic(robot_set_entity_server: &mut ResMut<RobotSet
                                    asset_server: &Res<AssetServer>,
                                    materials: &mut ResMut<Assets<StandardMaterial>>) {
     commands.insert_resource(PathPlanningGUIValues::new());
+    commands.insert_resource(PathPlanningPlaybackPack::new());
 
     let robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world");
     let robot_set = robot_world.get_robot_set_mut_ref();
 
     robot_set_entity_server.hide_robot(0);
 
-    while robot_set_entity_server.get_num_individual_robot_set_entity_and_info_containers() < 3 {
-        spawn_robot_set(robot_set, commands, &asset_server, materials, robot_set_entity_server, robot_set_asset_loader, RobotLinkSpawnType::Visualization, Some(LynxMaterialType::PathPlanningStart));
+    while robot_set_entity_server.get_num_individual_robot_set_entity_and_info_containers() < 4 {
+        spawn_robot_set(robot_set, commands, &asset_server, materials, robot_set_entity_server, robot_set_asset_loader, RobotLinkSpawnType::Visualization, Some(LynxMaterialType::Default));
     }
 
     robot_set_entity_server.unhide_robot(1);
     robot_set_entity_server.hide_robot(2);
+    robot_set_entity_server.hide_robot(3);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(1, LynxMaterialType::PathPlanningStart);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(2, LynxMaterialType::PathPlanningGoal);
+    robot_set_entity_server.change_link_base_material_data_whole_robot_set(3, LynxMaterialType::Default);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,9 +74,11 @@ pub fn path_planning_enter_generic(robot_set_entity_server: &mut ResMut<RobotSet
 fn path_planning_exit(mut robot_set_entity_server: ResMut<RobotSetEntityAndInfoServer>) {
     robot_set_entity_server.hide_robot(1);
     robot_set_entity_server.hide_robot(2);
+    robot_set_entity_server.hide_robot(3);
     robot_set_entity_server.unhide_robot(0);
     robot_set_entity_server.purge_robot_server_vectors(1);
     robot_set_entity_server.purge_robot_server_vectors(2);
+    robot_set_entity_server.purge_robot_server_vectors(3);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

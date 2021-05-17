@@ -815,7 +815,7 @@ impl IndividualRobotSetEntityAndInfoContainer {
             return Err(format!("curr_link_material with robot_set_idx {:?} and link_idx {:?} is None", robot_set_idx, robot_link_idx));
         }
 
-        return Ok( self._curr_link_materials[robot_set_idx][robot_link_idx].unwrap().clone() );
+        return Ok( self._curr_link_materials[robot_set_idx][robot_link_idx].as_ref().unwrap().clone() );
     }
 
     pub fn get_base_material(&self, robot_set_idx: usize, robot_link_idx: usize) -> Result<LynxMaterialType, String> {
@@ -831,7 +831,7 @@ impl IndividualRobotSetEntityAndInfoContainer {
             return Err(format!("curr_link_material with robot_set_idx {:?} and link_idx {:?} is None", robot_set_idx, robot_link_idx));
         }
 
-        return Ok( self._base_link_materials[robot_set_idx][robot_link_idx].unwrap().clone() );
+        return Ok( self._base_link_materials[robot_set_idx][robot_link_idx].as_ref().unwrap().clone() );
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

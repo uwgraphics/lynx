@@ -10,7 +10,7 @@ edition = "2018"
 nalgebra = {version="0.23.0", features=["serde-serialize"]}
 rayon = "1.5.0"
 ncollide3d = "0.26.0"
-ncollide2d = "0.19.0"
+# ncollide2d = "0.19.0"
 rand = "0.7.2"
 urdf-rs = "0.5.0"
 collada = "0.13.0"

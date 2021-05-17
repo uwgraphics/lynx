@@ -113,14 +113,14 @@ impl<'a> LynxVarsGeneric<'a> {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn get_robot_module_toolbox_ref(&self, name: Option<&str>) -> Result<&Robot, String> {
+    pub fn get_robot_ref(&self, name: Option<&str>) -> Result<&Robot, String> {
         return match name {
             None => { get_lynx_var_ref_generic!(self, Robot, "robot_module_toolbox") }
             Some(n) => { get_lynx_var_ref_generic!(self, Robot, n) }
         }
     }
 
-    pub fn get_robot_module_toolbox_mut_ref(&mut self, name: Option<&str>) -> Result<&mut Robot, String> {
+    pub fn get_robot_mut_ref(&mut self, name: Option<&str>) -> Result<&mut Robot, String> {
         return match name {
             None => { get_lynx_var_mut_ref_generic!(self, Robot, "robot_module_toolbox") }
             Some(n) => { get_lynx_var_mut_ref_generic!(self, Robot, n) }

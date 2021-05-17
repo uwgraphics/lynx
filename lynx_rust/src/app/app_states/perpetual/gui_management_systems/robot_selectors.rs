@@ -39,12 +39,18 @@ pub fn gui_robot_selector(ui: &mut Ui,
                 let r = current_main_gui_values.curr_selected_robot_and_configuration.as_ref().unwrap();
 
                 let configuration_names = if r.1.is_some() { vec![Some(r.1.as_ref().unwrap().as_str())] } else { vec![None] };
-                let mut lynx_vars_new = LynxVarsGeneric::new_parallel_packaged_with_robot_world(None, vec![r.0.as_str()], configuration_names, None).expect("error");
+                // let mut lynx_vars_new = LynxVarsGeneric::new_parallel_packaged_with_robot_world(None, vec![r.0.as_str()], configuration_names, None).expect("error");
 
-                let mut new_robot_world = get_lynx_var_mut_ref_generic!(&mut lynx_vars_new, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
-                let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
+                // let mut new_robot_world = get_lynx_var_mut_ref_generic!(&mut lynx_vars_new, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
+                // let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
+                // robot_world.set_robot_set(new_robot_world.get_robot_set_ref().clone());
+                // **lynx_vars = lynx_vars_new;
 
-                robot_world.set_robot_set(new_robot_world.get_robot_set_ref().clone());
+                let mut robot_worlds = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
+                for ro in &mut robot_worlds {
+                    ro.update_robot_set(vec![r.0.as_str()], configuration_names.clone());
+                }
+
                 println!("loaded");
 
                 spawn.0 = true;
@@ -82,12 +88,17 @@ pub fn gui_robot_set_selector(ui: &mut Ui,
         if ui.button("Load Robot Set").clicked() {
             if current_main_gui_values.curr_selected_robot_set.is_some() {
                 let r = current_main_gui_values.curr_selected_robot_set.as_ref().unwrap();
-                let mut lynx_vars_new = LynxVarsGeneric::new_parallel_packaged_with_robot_world_from_set_name(None, r.as_str(), None).expect("error");
+                // let mut lynx_vars_new = LynxVarsGeneric::new_parallel_packaged_with_robot_world_from_set_name(None, r.as_str(), None).expect("error");
 
-                let mut new_robot_world = get_lynx_var_mut_ref_generic!(&mut lynx_vars_new, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
-                let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
+                // let mut new_robot_world = get_lynx_var_mut_ref_generic!(&mut lynx_vars_new, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
+                // let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
 
-                robot_world.set_robot_set(new_robot_world.get_robot_set_ref().clone());
+                // robot_world.set_robot_set(new_robot_world.get_robot_set_ref().clone());
+                let mut robot_worlds = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
+                for ro in &mut robot_worlds {
+                    ro.update_robot_set_from_set_name(r.as_str());
+                }
+
                 println!("loaded");
                 spawn.0 = true;
             }

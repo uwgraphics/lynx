@@ -40,8 +40,14 @@ pub fn gui_environment_selector(ui: &mut Ui,
                     let curr_selected_environment = current_main_gui_values.curr_selected_environment.as_ref().unwrap().clone();
                     let collision_environment = CollisionEnvironment::new(curr_selected_environment.as_str()).expect("error loading collision environment");
 
-                    let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars");
-                    robot_world.set_collision_environment(collision_environment);
+                    let mut robot_world = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
+                    for r in robot_world {
+                        r.set_collision_environment(collision_environment.clone());
+                    }
+                    // robot_world.set_collision_environment(collision_environment);
+
+                    // let robot_world_ = robot_world.clone();
+                    // set_or_add_lynx_var_generic!(&mut **lynx_vars, RobotWorld, "robot_world", robot_world_);
 
                     spawn.0 = true;
                 }
@@ -52,8 +58,10 @@ pub fn gui_environment_selector(ui: &mut Ui,
                     let curr_selected_environment = current_main_gui_values.curr_selected_environment.as_ref().unwrap().clone();
                     let collision_environment = CollisionEnvironment::new(curr_selected_environment.as_str()).expect("error loading collision environment");
 
-                    let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars");
-                    robot_world.absorb_collision_environment(collision_environment);
+                    let mut robot_world = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
+                    for r in robot_world {
+                        r.absorb_collision_environment(collision_environment.clone());
+                    }
 
                     spawn.0 = true;
                 }
@@ -62,8 +70,13 @@ pub fn gui_environment_selector(ui: &mut Ui,
 
         ui.horizontal(|ui| {
             if ui.button("Remove Env.").clicked() {
-                let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars");
-                robot_world.remove_collision_environment();
+                let mut robot_world = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
+                for r in robot_world {
+                    r.remove_collision_environment();
+                }
+
+                // let robot_world_ = robot_world.clone();
+                // set_or_add_lynx_var_generic!(&mut **lynx_vars, RobotWorld, "robot_world", robot_world_);
 
                 env_entity_server.despawn_all(commands);
             }

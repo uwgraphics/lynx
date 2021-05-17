@@ -26,7 +26,7 @@ pub fn spawn_robot_set(robot_set: &RobotSet,
     let l = robots.len();
     for i in 0..l {
         let individual_robot_asset_loader = &robot_set_asset_loader.get_robot_asset_loaders_ref()[i];
-        let output = _spawn_robot(&robots[i], commands, asset_server, materials, individual_robot_asset_loader, i, server_idx, robot_link_spawn_type.clone(), base_link_material);
+        let output = _spawn_robot(&robots[i], commands, asset_server, materials, individual_robot_asset_loader, i, server_idx, robot_link_spawn_type.clone(), base_link_material.clone());
         robot_set_entity_container.push_all_link_entities_from_one_robot(
             output.visible_glb_scene_link_entities,
             output.standard_material_link_entities,
@@ -237,7 +237,7 @@ fn _spawn_physical_link(commands: &mut Commands,
     };
 
     if standard_material_mesh_handle_id.is_some() {
-        if base_link_material.is_some() { out.link_material = base_link_material }
+        if base_link_material.is_some() { out.link_material = base_link_material.clone() }
         else { out.link_material = Some(LynxMaterialType::Default); }
         let id = _spawn_standard_material_link(commands,
                                                asset_server,
@@ -252,7 +252,7 @@ fn _spawn_physical_link(commands: &mut Commands,
                                                robot_server_idx,
                                                RobotLinkSpawnType::Physical,
                                                visible_glb_scene_handle_id.is_some(),
-                                               out.link_material.unwrap().clone());
+                                               out.link_material.as_ref().unwrap().clone());
         out.standard_material_link_entity = Some(id);
 
         let id = _spawn_selectable_invisible_link(commands,
@@ -323,7 +323,7 @@ fn _spawn_visualization_link(commands: &mut Commands,
                                                robot_server_idx,
                                                RobotLinkSpawnType::Visualization,
                                                false,
-                                               out.link_material.unwrap().clone() );
+                                               out.link_material.as_ref().unwrap().clone() );
         out.standard_material_link_entity = Some(id);
 
         let id = _spawn_selectable_invisible_link(commands,

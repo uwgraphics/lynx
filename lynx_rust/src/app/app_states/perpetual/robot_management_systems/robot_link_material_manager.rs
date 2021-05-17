@@ -10,7 +10,7 @@ pub fn robot_link_material_manager_system(mut robot_set_entity_server: ResMut<Ro
 
     let changed_materials_pack = robot_set_entity_server.get_changed_link_material_pack().clone();
     for m in &changed_materials_pack {
-        change_material_of_robot_link(m.1,
+        change_material_of_robot_link(m.1.clone(),
                                       &asset_server,
                                       &mut materials,
                                       &mut robot_set_entity_server,
@@ -32,7 +32,7 @@ pub fn robot_link_material_manager_system(mut robot_set_entity_server: ResMut<Ro
         }
 
         if !found_in_changed_materials_pack {
-            reset_material_of_robot_link(m.1,
+            reset_material_of_robot_link(m.1.clone(),
                                          &asset_server,
                                          &mut materials,
                                          &mut robot_set_entity_server,

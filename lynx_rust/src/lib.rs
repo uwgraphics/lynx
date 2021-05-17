@@ -266,6 +266,22 @@ macro_rules! get_lynx_var_mut_ref_parallel {
     };
 }
 
+#[macro_use] #[macro_export]
+macro_rules! get_lynx_var_all_mut_refs_parallel {
+    ($lynx_vars_parallel: expr, $i: ident, $variable_name: expr) => {
+        {
+            let mut out: Vec<&mut $i> = Vec::new();
+            let mut it = $lynx_vars_parallel.get_iter_mut();
+            // let lynx_vars = $lynx_vars_parallel.get_first_mut_ref();
+            it.for_each(|x| {
+                out.push(get_lynx_var_mut_ref!(x, $i, $variable_name).expect(format!("variable {:?} not found in macro get_lynx_var_all_mut_refs_parallel", $variable_name).as_str()));
+            });
+            // let out = get_lynx_var_mut_ref!(lynx_vars, $i, $variable_name);
+            out
+        }
+    };
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -391,6 +407,21 @@ macro_rules! get_lynx_var_mut_ref_generic {
                 LynxVarsGeneric::SingleThreadedMutRef(v) => get_lynx_var_mut_ref!(v, $i, $variable_name),
                 LynxVarsGeneric::Parallel(v) => get_lynx_var_mut_ref_parallel!(v, $i, $variable_name),
             }
+        }
+    };
+}
+
+#[macro_use] #[macro_export]
+macro_rules! get_lynx_var_all_mut_refs_generic {
+    ($lynx_vars_generic: expr, $i: ident, $variable_name: expr) => {
+        {
+            let mut out: Vec<&mut $i> = Vec::new();
+            match $lynx_vars_generic {
+                LynxVarsGeneric::SingleThreaded(v) => out = vec![get_lynx_var_mut_ref!(v, $i, $variable_name).expect("error in macro get_lynx_var_all_mut_refs_generic")],
+                LynxVarsGeneric::SingleThreadedMutRef(v) => out = vec![get_lynx_var_mut_ref!(v, $i, $variable_name).expect("error in macro get_lynx_var_all_mut_refs_generic")],
+                LynxVarsGeneric::Parallel(v) => out = get_lynx_var_all_mut_refs_parallel!(v, $i, $variable_name),
+            }
+            out
         }
     };
 }

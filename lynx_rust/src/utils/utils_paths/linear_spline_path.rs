@@ -1,6 +1,7 @@
 use nalgebra::{DVector, min};
 use crate::utils::utils_math::nalgebra_utils::vec_to_dvec;
 use crate::utils::utils_math::interpolation_utils::{get_linear_interpolation_with_stepsize};
+use crate::utils::utils_paths::arclength_parameterization_util::ArclengthParameterizationUtil;
 
 /*
 #[derive(Debug, Clone)]
@@ -170,11 +171,16 @@ impl LinearSplinePath {
 #[derive(Debug, Clone)]
 pub struct LinearSplinePath {
     pub waypoints: Vec<DVector<f64>>,
+    _arclength_parameterization_util: Option<ArclengthParameterizationUtil>
 }
 
 impl LinearSplinePath {
     pub fn new(waypoints: Vec<DVector<f64>>) -> Self {
-        return Self {waypoints}
+        let _arclength_parameterization_util = None;
+        return Self {
+            waypoints,
+            _arclength_parameterization_util
+        }
     }
 
     pub fn new_from_vecs(waypoints: Vec<Vec<f64>>) -> Self {
@@ -196,6 +202,17 @@ impl LinearSplinePath {
 
     pub fn add_waypoint(&mut self, waypoint: &DVector<f64>) {
         self.waypoints.push( waypoint.clone() );
+        self._arclength_parameterization_util = None;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    pub fn get_arclength_interpolated_point(&mut self, u: f64) -> DVector<f64> {
+        if self._arclength_parameterization_util.is_none() {
+            self._arclength_parameterization_util = Some(ArclengthParameterizationUtil::new(&self));
+        }
+
+        return self._arclength_parameterization_util.as_ref().unwrap().get_arclength_interpolated_point(&self, u);
     }
 
     pub fn get_num_waypoints(&self) -> usize {

@@ -25,6 +25,9 @@ pub fn environment_spawn_manager_system(mut spawn_new_environment: ResMut<SpawnN
 
         spawn_environment(collision_environment, &mut commands, &asset_server, &mut materials, &mut environment_entity_server);
 
+        // let robot_world_ = robot_world.clone();
+        // set_or_add_lynx_var_generic!(&mut *lynx_vars, RobotWorld, "robot_world", robot_world_);
+
         spawn_new_environment.0 = false;
     }
 }
