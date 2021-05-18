@@ -11,6 +11,7 @@ pub mod robot_triangle_mesh_collision_module;
 pub mod robot_core_collision_parallel_module;
 pub mod robot_triangle_mesh_collision_parallel_module;
 pub mod robot_salient_links_module;
+pub mod robot_saved_joint_states_module;
 pub mod robot_mesh_info_module;
 pub mod robot_set;
 pub mod robot_world;

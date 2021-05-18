@@ -75,6 +75,16 @@ pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
             let robot_state = &robot_split_state[i];
             if i > 0 { dof_running_total += robot_set.get_robots_ref()[i - 1].get_dof_module_ref().get_num_dofs() }
             egui::CollapsingHeader::new(format!("Robot {:?}: {}", i + 1, robot.get_robot_name_ref())).id_source(heading.to_string() + "b" + usize_to_string(i).as_str()).default_open(true).show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    if ui.button("Save State").clicked() {
+
+                    }
+                    if ui.button("Load State").clicked() {
+
+                    }
+                });
+                ui.separator();
+
                 let bounds_module = robot.get_bounds_module_ref();
                 let bounds = bounds_module.get_bounds();
                 let dof_module = robot.get_dof_module_ref();
@@ -142,7 +152,6 @@ pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
                                 update_robot_link_transforms(&robot_set_joint_values.clone(), &robot_set, &mut *robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
                             }
                         });
-
                     });
                 }
             });

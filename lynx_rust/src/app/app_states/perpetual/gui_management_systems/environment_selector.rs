@@ -38,7 +38,7 @@ pub fn gui_environment_selector(ui: &mut Ui,
             if ui.button("Load Env.").clicked() {
                 if current_main_gui_values.curr_selected_environment.is_some() {
                     let curr_selected_environment = current_main_gui_values.curr_selected_environment.as_ref().unwrap().clone();
-                    let collision_environment = CollisionEnvironment::new(curr_selected_environment.as_str()).expect("error loading collision environment");
+                    let collision_environment = CollisionEnvironment::new_with_environment_name(curr_selected_environment.as_str()).expect("error loading collision environment");
 
                     let mut robot_world = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
                     for r in robot_world {
@@ -56,7 +56,7 @@ pub fn gui_environment_selector(ui: &mut Ui,
             if ui.button("Append Env.").clicked() {
                 if current_main_gui_values.curr_selected_environment.is_some() {
                     let curr_selected_environment = current_main_gui_values.curr_selected_environment.as_ref().unwrap().clone();
-                    let collision_environment = CollisionEnvironment::new(curr_selected_environment.as_str()).expect("error loading collision environment");
+                    let collision_environment = CollisionEnvironment::new_with_environment_name(curr_selected_environment.as_str()).expect("error loading collision environment");
 
                     let mut robot_world = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
                     for r in robot_world {
@@ -106,7 +106,7 @@ pub fn gui_environment_selector(ui: &mut Ui,
                         if collision_environment_.is_some() {
                             let mut collision_environment = collision_environment_.as_mut().unwrap();
                             collision_environment.print_summary();
-                            collision_environment.save_environment_obbs_metadata(current_text.as_str());
+                            collision_environment.save_environment_obbs_metadata_with_environment_name(current_text.as_str());
                         }
                         window_open = false;
                     }

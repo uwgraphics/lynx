@@ -429,6 +429,17 @@ macro_rules! get_lynx_var_all_mut_refs_generic {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[macro_use] #[macro_export]
+macro_rules! convert_to_json_string {
+    ($variable: expr) => {
+        {
+            let serialized = serde_json::to_string($variable).unwrap();
+            serialized
+        }
+    };
+}
+
+
+#[macro_use] #[macro_export]
 macro_rules! load_from_json_string {
     ($json_string: expr, $type: ident) => {
         {

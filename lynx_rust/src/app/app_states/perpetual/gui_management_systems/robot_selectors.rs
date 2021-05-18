@@ -46,9 +46,10 @@ pub fn gui_robot_selector(ui: &mut Ui,
                 // robot_world.set_robot_set(new_robot_world.get_robot_set_ref().clone());
                 // **lynx_vars = lynx_vars_new;
 
+                let robot_set = RobotSet::new(vec![r.0.as_str()], configuration_names.clone()).expect("error loading robot set");
                 let mut robot_worlds = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
                 for ro in &mut robot_worlds {
-                    ro.update_robot_set(vec![r.0.as_str()], configuration_names.clone());
+                    ro.update_robot_set_with_given_set(robot_set.clone());
                 }
 
                 println!("loaded");
@@ -94,9 +95,10 @@ pub fn gui_robot_set_selector(ui: &mut Ui,
                 // let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world from lynx_vars in robot_spawn_manager_system");
 
                 // robot_world.set_robot_set(new_robot_world.get_robot_set_ref().clone());
+                let robot_set = RobotSet::new_from_set_name(r.as_str()).expect("error loading robot set");
                 let mut robot_worlds = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
                 for ro in &mut robot_worlds {
-                    ro.update_robot_set_from_set_name(r.as_str());
+                    ro.update_robot_set_with_given_set(robot_set.clone());
                 }
 
                 println!("loaded");

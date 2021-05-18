@@ -13,6 +13,7 @@ use crate::utils::utils_files_and_strings::prelude::*;
 use crate::utils::utils_preprocessing::mesh_preprocessing_utils::save_all_links_as_triangle_meshes;
 use termion::{style, color};
 use std::fmt;
+use crate::robot_modules::robot_saved_joint_states_module::RobotSavedJointStatesModule;
 
 
 #[derive(Clone)]
@@ -23,6 +24,7 @@ pub struct Robot {
     _robot_bounds_module: RobotBoundsModule,
     _robot_fk_module: RobotFKModule,
     _robot_salient_links_module: RobotSalientLinksModule,
+    _robot_saved_joint_states_module: RobotSavedJointStatesModule,
     _robot_core_collision_module: RobotCoreCollisionModule,
     _robot_triangle_mesh_collision_module: Option<RobotTriangleMeshCollisionModule>,
     // _robot_mesh_info_module: RobotMeshInfoModule
@@ -42,11 +44,19 @@ impl Robot {
         let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_fk_module = RobotFKModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_salient_links_module = RobotSalientLinksModule::new(&_robot_configuration_module);
+        let _robot_saved_joint_states_module = RobotSavedJointStatesModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_core_collision_module = RobotCoreCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
         // let _robot_mesh_info_module = RobotMeshInfoModule::new(&_robot_configuration_module);
 
-        return Ok( Self { _robot_name, _robot_configuration_module, _robot_dof_module, _robot_bounds_module, _robot_fk_module,
-            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
+        return Ok( Self { _robot_name,
+            _robot_configuration_module,
+            _robot_dof_module,
+            _robot_bounds_module,
+            _robot_fk_module,
+            _robot_salient_links_module,
+            _robot_saved_joint_states_module,
+            _robot_core_collision_module,
+            _robot_triangle_mesh_collision_module: None } );
     }
 
     pub fn new_from_manual_inputs(robot_name: &str, configuration_name: &str, base_offset: ImplicitDualQuaternion, dead_end_link_names: Vec<String>, inactive_joint_names: Vec<String>, mobile_base_mode: String, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
@@ -60,11 +70,19 @@ impl Robot {
         let _robot_bounds_module = RobotBoundsModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_fk_module = RobotFKModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_salient_links_module = RobotSalientLinksModule::new(&_robot_configuration_module);
+        let _robot_saved_joint_states_module = RobotSavedJointStatesModule::new(&_robot_configuration_module, &_robot_dof_module);
         let _robot_core_collision_module = RobotCoreCollisionModule::new(&_robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
         // let _robot_mesh_info_module = RobotMeshInfoModule::new(&_robot_configuration_module);
 
-        return Ok( Self { _robot_name, _robot_configuration_module, _robot_dof_module, _robot_bounds_module, _robot_fk_module,
-            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
+        return Ok( Self { _robot_name,
+            _robot_configuration_module,
+            _robot_dof_module,
+            _robot_bounds_module,
+            _robot_fk_module,
+            _robot_salient_links_module,
+            _robot_saved_joint_states_module,
+            _robot_core_collision_module,
+            _robot_triangle_mesh_collision_module: None } );
     }
 
     pub fn new_from_configuration_module(robot_configuration_module: &RobotConfigurationModule) -> Result<Self, String> {
@@ -75,11 +93,19 @@ impl Robot {
         let _robot_bounds_module = RobotBoundsModule::new(robot_configuration_module, &_robot_dof_module);
         let _robot_fk_module = RobotFKModule::new(robot_configuration_module, &_robot_dof_module);
         let _robot_salient_links_module = RobotSalientLinksModule::new(robot_configuration_module);
+        let _robot_saved_joint_states_module = RobotSavedJointStatesModule::new(robot_configuration_module, &_robot_dof_module);
         let _robot_core_collision_module = RobotCoreCollisionModule::new(robot_configuration_module, &_robot_fk_module, &_robot_bounds_module)?;
         // let _robot_mesh_info_module = RobotMeshInfoModule::new(robot_configuration_module);
 
-        return Ok( Self { _robot_name, _robot_configuration_module: robot_configuration_module.clone(), _robot_dof_module, _robot_bounds_module, _robot_fk_module,
-            _robot_salient_links_module, _robot_core_collision_module, _robot_triangle_mesh_collision_module: None } );
+        return Ok( Self { _robot_name,
+            _robot_configuration_module: robot_configuration_module.clone(),
+            _robot_dof_module,
+            _robot_bounds_module,
+            _robot_fk_module,
+            _robot_salient_links_module,
+            _robot_saved_joint_states_module,
+            _robot_core_collision_module,
+            _robot_triangle_mesh_collision_module: None } );
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +127,10 @@ impl Robot {
     }
 
     pub fn get_salient_links_module_ref(&self) -> &RobotSalientLinksModule { return &self._robot_salient_links_module; }
+
+    pub fn get_saved_joint_states_module_ref(&self) -> &RobotSavedJointStatesModule { return &self._robot_saved_joint_states_module; }
+
+    pub fn get_saved_joint_states_module_mut_ref(&mut self) -> &mut RobotSavedJointStatesModule { return &mut self._robot_saved_joint_states_module; }
 
     pub fn get_core_collision_module_ref(&self) -> &RobotCoreCollisionModule {
         return &self._robot_core_collision_module;

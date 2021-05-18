@@ -17,7 +17,7 @@ pub struct CollisionEnvironment {
 }
 
 impl CollisionEnvironment {
-    pub fn new(environment_name: &str) -> Result<Self, String> {
+    pub fn new_with_environment_name(environment_name: &str) -> Result<Self, String> {
         let environment_obbs = Vec::new();
         let object_names = Vec::new();
         let trimesh_engines = Vec::new();
@@ -32,8 +32,50 @@ impl CollisionEnvironment {
             original_file_directories,
             transforms
         };
-        out_self._load_environment_obbs(&environment_name.to_string())?;
+        out_self._load_environment_obbs_with_environment_name(&environment_name.to_string())?;
         out_self._set_bounding_volumes();
+
+        return Ok(out_self);
+    }
+
+    pub fn new_with_json_string(json_string: String) -> Result<Self, String> {
+        let environment_obbs = Vec::new();
+        let object_names = Vec::new();
+        let trimesh_engines = Vec::new();
+        let original_file_directories = Vec::new();
+        let transforms = Vec::new();
+
+        let mut out_self = Self {
+            environment_name: "".to_string(),
+            environment_obbs,
+            object_names,
+            trimesh_engines,
+            original_file_directories,
+            transforms
+        };
+
+        out_self._load_environment_from_json_string(json_string);
+
+        return Ok(out_self);
+    }
+
+    pub fn new_with_path_to_metadata(metadata_fp:  String) -> Result<Self, String> {
+        let environment_obbs = Vec::new();
+        let object_names = Vec::new();
+        let trimesh_engines = Vec::new();
+        let original_file_directories = Vec::new();
+        let transforms = Vec::new();
+
+        let mut out_self = Self {
+            environment_name: "".to_string(),
+            environment_obbs,
+            object_names,
+            trimesh_engines,
+            original_file_directories,
+            transforms
+        };
+
+        out_self._load_environment_from_metadata_fp(metadata_fp);
 
         return Ok(out_self);
     }
@@ -70,7 +112,7 @@ impl CollisionEnvironment {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn save_environment_obbs_metadata(&mut self, environment_name: &str) {
+    pub fn get_json_string(&self) -> String {
         let mut vertices: Vec<Vec<Vec<Point<f64>>>> = Vec::new();
         let mut indices: Vec<Vec<Vec<Point<usize>>>> = Vec::new();
         for i in 0..self.trimesh_engines.len() {
@@ -82,85 +124,35 @@ impl CollisionEnvironment {
             }
         }
 
-        let fp = get_path_to_src() + "assets/mesh_environments/" + environment_name;
         let serialized = serde_json::to_string( &(vertices, indices, self.object_names.clone(), self.original_file_directories.clone(), self.transforms.clone()) ).ok().unwrap();
-        write_string_to_file(fp, "metadata.json".to_string(), serialized, true );
+        return serialized;
     }
 
-    fn _load_environment_obbs(&mut self, environment_name: &String) -> Result<(), String> {
-        let all_available_environments = self._get_all_available_environment_names();
-        if !all_available_environments.contains(environment_name) {
-            println!("{}{}ERROR: environment {} not found as valid environment. {}", color::Fg(color::Red), style::Bold, environment_name, style::Reset);
-            return Err(format!("environment {} not found as valid environment.", environment_name));
-        }
-
-        let mesh_filenames = self._get_all_mesh_files_in_particular_environment_directory(environment_name);
-
-        let l = mesh_filenames.len();
-        for i in 0..l {
-            let ext = get_filename_extension(mesh_filenames[i].clone());
-            if !(mesh_filenames[i].clone() == "metadata.json".to_string()) && !(ext == "glb") {
-                self.object_names.push( get_filename_without_extension(mesh_filenames[i].clone()) );
+    pub fn save_environment_obbs_metadata_with_fp(&mut self, fp: String) {
+        let mut vertices: Vec<Vec<Vec<Point<f64>>>> = Vec::new();
+        let mut indices: Vec<Vec<Vec<Point<usize>>>> = Vec::new();
+        for i in 0..self.trimesh_engines.len() {
+            vertices.push(Vec::new());
+            indices.push(Vec::new());
+            for j in 0..self.trimesh_engines[i].len() {
+                vertices[i].push( self.trimesh_engines[i][j].vertices.clone() );
+                indices[i].push( self.trimesh_engines[i][j].indices.clone() );
             }
         }
 
-        println!("{}{}Loading environment {}... {}", color::Fg(color::Cyan), style::Bold, environment_name, style::Reset);
-
-        let metadata_fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str() + "/metadata.json";
-
-        let metadata_exists = check_if_path_exists(metadata_fp.clone());
-        let mut loaded_from_metadata = false;
-        if metadata_exists {
-            let fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str();
-            let mut directory_updated_since_metadata_was_created = check_if_file1_modified_after_file2(fp.clone(), metadata_fp.clone());
-
-            if (directory_updated_since_metadata_was_created.is_some() && !directory_updated_since_metadata_was_created.unwrap()) || self.object_names.len() == 0 {
-                self._load_environment_from_metadata(environment_name.clone());
-                return Ok(());
-            }
-        }
-
-        let mut count = 0 as usize;
-        if !loaded_from_metadata {
-            let l = mesh_filenames.len();
-            for i in 0..l {
-                if mesh_filenames[i] == "metadata.json".to_string() { continue; }
-                let ext = get_filename_extension(mesh_filenames[i].clone());
-                if ext == "glb" {
-                    continue
-                };
-
-                self.environment_obbs.push(Vec::new());
-                let fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str() + "/" + mesh_filenames[i].as_str();
-                let mut t = TriMeshEngine::new_from_path(fp)?;
-                if t.vertices.len() == 0 {
-                    println!("{}{}WARNING: Object {} in environment {} was empty.  {}", color::Fg(color::Yellow), style::Bold, mesh_filenames[i], environment_name, style::Reset);
-                }
-                let mut ts = t.split_into_convex_components(0.08, 0);
-                let l = ts.len();
-                for j in 0..l {
-                    self.environment_obbs[count].push( CollisionObject::new_cuboid_from_trimesh_engine(&ts[j], Some( mesh_filenames[i].clone() + format!("_{:?}", j).as_str() )) );
-                }
-                self.trimesh_engines.push(ts);
-
-                self.original_file_directories.push(environment_name.to_string());
-                self.transforms.push(ImplicitDualQuaternion::new_identity());
-
-                count += 1;
-            }
-            self.save_environment_obbs_metadata(environment_name.as_str());
-        }
-
-        Ok(())
+        let serialized = serde_json::to_string( &(vertices, indices, self.object_names.clone(), self.original_file_directories.clone(), self.transforms.clone()) ).ok().unwrap();
+        write_string_to_file(fp, "environment_metadata.json".to_string(), serialized, true );
     }
 
-    fn _load_environment_from_metadata(&mut self, environment_name: String) {
-        let metadata_fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str() + "/metadata.json";
+    pub fn save_environment_obbs_metadata_with_environment_name(&mut self, environment_name: &str) {
+        let fp = get_path_to_src() + "assets/mesh_environments/" + environment_name;
+        self.save_environment_obbs_metadata_with_fp(fp);
+    }
 
-        let json_string = read_file_contents(metadata_fp);
-        if json_string.is_none() { return; }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
-        let metadata: (Vec<Vec<Vec<Point<f64>>>>,Vec<Vec<Vec<Point<usize>>>>, Vec<String>, Vec<String>, Vec<ImplicitDualQuaternion>) = serde_json::from_str(&json_string.unwrap()).unwrap();
+    fn _load_environment_from_json_string(&mut self, json_string: String) {
+        let metadata: (Vec<Vec<Vec<Point<f64>>>>,Vec<Vec<Vec<Point<usize>>>>, Vec<String>, Vec<String>, Vec<ImplicitDualQuaternion>) = serde_json::from_str(&json_string).unwrap();
 
         let (vertices, indices, object_names, original_file_directories, transforms) = &metadata;
 
@@ -188,6 +180,90 @@ impl CollisionEnvironment {
             }
         }
     }
+
+    fn _load_environment_from_metadata_fp(&mut self, metadata_fp: String) {
+        let json_string = read_file_contents(metadata_fp);
+        if json_string.is_none() { return; }
+
+        self._load_environment_from_json_string(json_string.unwrap());
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    fn _load_environment_obbs_with_environment_name(&mut self, environment_name: &String) -> Result<(), String> {
+        let all_available_environments = self._get_all_available_environment_names();
+        if !all_available_environments.contains(environment_name) {
+            println!("{}{}ERROR: environment {} not found as valid environment. {}", color::Fg(color::Red), style::Bold, environment_name, style::Reset);
+            return Err(format!("environment {} not found as valid environment.", environment_name));
+        }
+
+        let mesh_filenames = self._get_all_mesh_files_in_particular_environment_directory(environment_name);
+
+        let l = mesh_filenames.len();
+        for i in 0..l {
+            let ext = get_filename_extension(mesh_filenames[i].clone());
+            if !(mesh_filenames[i].clone() == "environment_metadata.json".to_string()) && !(ext == "glb") {
+                self.object_names.push( get_filename_without_extension(mesh_filenames[i].clone()) );
+            }
+        }
+
+        println!("{}{}Loading environment {}... {}", color::Fg(color::Cyan), style::Bold, environment_name, style::Reset);
+
+        let metadata_fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str() + "/environment_metadata.json";
+
+        let metadata_exists = check_if_path_exists(metadata_fp.clone());
+        let mut loaded_from_metadata = false;
+        if metadata_exists {
+            let fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str();
+            let mut directory_updated_since_metadata_was_created = check_if_file1_modified_after_file2(fp.clone(), metadata_fp.clone());
+
+            if (directory_updated_since_metadata_was_created.is_some() && !directory_updated_since_metadata_was_created.unwrap()) || self.object_names.len() == 0 {
+                self._load_environment_from_metadata_with_environment_name(environment_name.clone());
+                return Ok(());
+            }
+        }
+
+        let mut count = 0 as usize;
+        if !loaded_from_metadata {
+            let l = mesh_filenames.len();
+            for i in 0..l {
+                if mesh_filenames[i] == "environment_metadata.json".to_string() { continue; }
+                let ext = get_filename_extension(mesh_filenames[i].clone());
+                if ext == "glb" {
+                    continue
+                };
+
+                self.environment_obbs.push(Vec::new());
+                let fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str() + "/" + mesh_filenames[i].as_str();
+                let mut t = TriMeshEngine::new_from_path(fp)?;
+                if t.vertices.len() == 0 {
+                    println!("{}{}WARNING: Object {} in environment {} was empty.  {}", color::Fg(color::Yellow), style::Bold, mesh_filenames[i], environment_name, style::Reset);
+                }
+                let mut ts = t.split_into_convex_components(0.08, 0);
+                let l = ts.len();
+                for j in 0..l {
+                    self.environment_obbs[count].push( CollisionObject::new_cuboid_from_trimesh_engine(&ts[j], Some( mesh_filenames[i].clone() + format!("_{:?}", j).as_str() )) );
+                }
+                self.trimesh_engines.push(ts);
+
+                self.original_file_directories.push(environment_name.to_string());
+                self.transforms.push(ImplicitDualQuaternion::new_identity());
+
+                count += 1;
+            }
+            self.save_environment_obbs_metadata_with_environment_name(environment_name.as_str());
+        }
+
+        Ok(())
+    }
+
+    fn _load_environment_from_metadata_with_environment_name(&mut self, environment_name: String) {
+        let metadata_fp = get_path_to_src() + "assets/mesh_environments/" + environment_name.as_str() + "/environment_metadata.json";
+
+        self._load_environment_from_metadata_fp(metadata_fp);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     fn _set_bounding_volumes(&mut self) {
         let l = self.environment_obbs.len();
