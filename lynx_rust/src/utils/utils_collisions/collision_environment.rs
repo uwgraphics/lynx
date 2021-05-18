@@ -308,6 +308,16 @@ impl CollisionEnvironment {
         return self.update_object_transform_by_idx(idx.unwrap(), new_transform);
     }
 
+    pub fn update_bounding_volumes_on_all_environment_obbs(&mut self) {
+        let l1 = self.environment_obbs.len();
+        for i in 0..l1 {
+            let l2 = self.environment_obbs[i].len();
+            for j in 0..l2 {
+                self.environment_obbs[i][j].update_all_bounding_volumes();
+            }
+        }
+    }
+
     fn _get_object_idx_from_object_name(&self, name: &str) -> Option<usize> {
         let l = self.object_names.len();
         for i in 0..l {

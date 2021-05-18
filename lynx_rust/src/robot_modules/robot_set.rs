@@ -24,7 +24,10 @@ pub struct RobotSet {
     _dofs_per_robot: Vec<usize>,
     _total_num_dofs: usize,
     _num_robots: usize,
-    _robot_set_result_vector_idxs_to_robot_idxs: Vec<(usize, usize)>
+    _robot_set_result_vector_idxs_to_robot_idxs: Vec<(usize, usize)>,
+    pub robot_names: Option<Vec<String>>,
+    pub configuration_names: Option<Vec<Option<String>>>,
+    pub robot_set_name: Option<String>,
 }
 
 impl RobotSet {
@@ -35,6 +38,8 @@ impl RobotSet {
             for i in 0..l {
                 out_self.add_robot(robot_names[i], configuration_names[i])?;
             }
+            out_self.robot_names = Some( str_vec_to_string_vec(&robot_names) );
+            out_self.configuration_names = Some( str_option_vec_to_string_option_vec(&configuration_names) );
             return Ok(out_self);
         }
         else {
@@ -45,13 +50,22 @@ impl RobotSet {
     pub fn new_from_set_name(robot_set_name: &str) -> Result<Self, String> {
         let mut out_self = Self::new_empty();
         out_self._load_from_yaml_file(robot_set_name)?;
+        out_self.robot_set_name = Some(robot_set_name.to_string());
         return Ok(out_self);
     }
 
     pub fn new_empty() -> Self {
         let _robot_set_result_vector_idxs_to_robot_idxs = Vec::new();
 
-        return Self { _robots: Vec::new(), _dofs_per_robot: Vec::new(), _total_num_dofs: 0, _num_robots: 0, _robot_set_result_vector_idxs_to_robot_idxs };
+        return Self { _robots: Vec::new(),
+            _dofs_per_robot: Vec::new(),
+            _total_num_dofs: 0,
+            _num_robots: 0,
+            _robot_set_result_vector_idxs_to_robot_idxs ,
+            robot_names: None,
+            configuration_names: None,
+            robot_set_name: None
+        };
     }
 
     fn _new_from_robot_configuration_modules(robot_configuration_modules: Vec<RobotConfigurationModule>) -> Result<Self, String> {

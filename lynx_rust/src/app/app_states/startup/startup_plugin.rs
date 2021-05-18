@@ -9,6 +9,7 @@ use bevy::transform::prelude::Transform;
 use crate::app::app_states::perpetual::environment_management_systems::environment_entity_and_info_server::EnvironmentEntityAndInfoServer;
 use crate::app::app_utils::asset_utils::individual_robot_asset_loader::IndividualRobotAssetLoader;
 use crate::app::app_utils::asset_utils::robot_set_asset_loader::RobotSetAssetLoader;
+use crate::app::app_states::path_planning::path_planning_res_comps::PathPlanningStartAndGoalStatePack;
 
 pub struct StartupPlugin;
 impl Plugin for StartupPlugin {
@@ -45,6 +46,7 @@ fn _insert_init_resources(commands: &mut Commands, asset_server: &Res<AssetServe
     commands.insert_resource(CollisionWindowVariables::new());
     commands.insert_resource(EnvironmentEntityAndInfoServer::new());
     commands.insert_resource(InstantContainer::new());
+    commands.insert_resource(PathPlanningStartAndGoalStatePack::new());
 }
 
 fn _spawn_init_lights(commands: &mut Commands) {

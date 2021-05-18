@@ -1,4 +1,4 @@
-use bevy::prelude::{Plugin, AppBuilder, SystemSet, IntoSystem, ResMut, Commands, AssetServer, Assets, StandardMaterial, Res};
+use bevy::prelude::{Plugin, AppBuilder, SystemSet, IntoSystem, ResMut, Commands, AssetServer, Assets, StandardMaterial, Res, Query, Transform};
 use crate::app::app_states::app_states_enum::AppState;
 use crate::app::app_states::res_comps::{RobotSetEntityAndInfoServer, RobotLinkSpawnType};
 use crate::app::app_utils::robot_utils::full_robot_set_spawners::*;
@@ -9,7 +9,8 @@ use crate::app::app_utils::asset_utils::robot_set_asset_loader::RobotSetAssetLoa
 use crate::app::app_states::path_planning::path_planning_gui::path_planning_gui_plugin::PathPlanningGUIPlugin;
 use crate::app::app_states::path_planning::path_planning_on_update_systems::path_planning_on_update_systems_plugin::PathPlanningOnUpdateSystemsPlugin;
 use crate::app::app_states::path_planning::path_planning_gui::path_planning_gui_values::PathPlanningGUIValues;
-use crate::app::app_states::path_planning::path_planning_res_comps::PathPlanningPlaybackPack;
+use crate::app::app_states::path_planning::path_planning_res_comps::{PathPlanningPlaybackPack, PathPlanningStartAndGoalStatePack};
+use crate::app::app_utils::robot_utils::robot_pose_utils::update_robot_link_transforms;
 
 pub struct PathPlanningStatePlugin;
 
@@ -38,9 +39,18 @@ fn path_planning_enter(mut robot_set_entity_server: ResMut<RobotSetEntityAndInfo
                        mut lynx_vars: ResMut<LynxVarsGeneric<'static>>,
                        mut commands: Commands,
                        asset_server: Res<AssetServer>,
-                       mut materials: ResMut<Assets<StandardMaterial>>) {
+                       mut materials: ResMut<Assets<StandardMaterial>>,
+                       mut path_planning_start_and_goal_state_pack: ResMut<PathPlanningStartAndGoalStatePack>,
+                       mut transform_query: Query<&mut Transform>) {
 
-    path_planning_enter_generic(&mut robot_set_entity_server, &mut robot_set_asset_loader, &mut lynx_vars, &mut commands, &asset_server, &mut materials);
+    path_planning_enter_generic(&mut robot_set_entity_server,
+                                &mut robot_set_asset_loader,
+                                &mut lynx_vars,
+                                &mut commands,
+                                &asset_server,
+                                &mut materials,
+                                &mut path_planning_start_and_goal_state_pack,
+                                &mut transform_query);
 }
 
 pub fn path_planning_enter_generic(robot_set_entity_server: &mut ResMut<RobotSetEntityAndInfoServer>,
@@ -48,7 +58,9 @@ pub fn path_planning_enter_generic(robot_set_entity_server: &mut ResMut<RobotSet
                                    lynx_vars: &mut ResMut<LynxVarsGeneric<'static>>,
                                    commands: &mut Commands,
                                    asset_server: &Res<AssetServer>,
-                                   materials: &mut ResMut<Assets<StandardMaterial>>) {
+                                   materials: &mut ResMut<Assets<StandardMaterial>>,
+                                   path_planning_start_and_goal_state_pack: &mut ResMut<PathPlanningStartAndGoalStatePack>,
+                                   transform_query: &mut Query<&mut Transform>) {
     commands.insert_resource(PathPlanningGUIValues::new());
     commands.insert_resource(PathPlanningPlaybackPack::new());
 
@@ -62,11 +74,31 @@ pub fn path_planning_enter_generic(robot_set_entity_server: &mut ResMut<RobotSet
     }
 
     robot_set_entity_server.unhide_robot(1);
-    robot_set_entity_server.hide_robot(2);
+    robot_set_entity_server.unhide_robot(2);
     robot_set_entity_server.hide_robot(3);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(1, LynxMaterialType::PathPlanningStart);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(2, LynxMaterialType::PathPlanningGoal);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(3, LynxMaterialType::Default);
+
+    if path_planning_start_and_goal_state_pack.start_state.is_some() && path_planning_start_and_goal_state_pack.goal_state.is_some() {
+        robot_set_entity_server.get_all_individual_robot_set_entity_and_info_containers_mut_ref()[1].set_robot_set_joint_values(&path_planning_start_and_goal_state_pack.start_state.as_ref().unwrap());
+        robot_set_entity_server.get_all_individual_robot_set_entity_and_info_containers_mut_ref()[2].set_robot_set_joint_values(&path_planning_start_and_goal_state_pack.goal_state.as_ref().unwrap());
+        path_planning_start_and_goal_state_pack.start_state = None;
+        path_planning_start_and_goal_state_pack.goal_state = None;
+    }
+
+    let start_state = robot_set_entity_server.get_all_individual_robot_set_entity_and_info_containers_ref()[1].get_robot_set_joint_values_ref().clone();
+    let goal_state = robot_set_entity_server.get_all_individual_robot_set_entity_and_info_containers_ref()[2].get_robot_set_joint_values_ref().clone();
+    update_robot_link_transforms(&start_state, robot_set, robot_set_entity_server, 1, transform_query);
+    update_robot_link_transforms(&goal_state, robot_set, robot_set_entity_server, 2, transform_query);
+
+    let mut robot_worlds = get_lynx_var_all_mut_refs_generic!(&mut **lynx_vars, RobotWorld, "robot_world");
+    for r in robot_worlds {
+        if r.get_collision_environment_option_mut_ref().is_some() {
+            r.get_collision_environment_option_mut_ref().as_mut().unwrap().update_bounding_volumes_on_all_environment_obbs();
+        }
+    }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

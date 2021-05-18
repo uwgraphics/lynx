@@ -2,6 +2,7 @@ use crate::robot_modules::robot_set::*;
 use crate::utils::utils_collisions::prelude::*;
 use crate::robot_modules::robot_fk_module::*;
 use crate::robot_modules::robot_core_collision_module::LinkGeometryType;
+use crate::utils::utils_files_and_strings::prelude::*;
 use termion::{style, color};
 
 #[derive(Clone, Debug)]
@@ -301,18 +302,27 @@ impl RobotWorld {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn update_robot_set(&mut self, robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>) -> Result<(), String> {
-        let robot_set = RobotSet::new(robot_names, configuration_names)?;
+        let robot_set = RobotSet::new(robot_names.clone(), configuration_names.clone())?;
         self._robot_set = robot_set;
+        self._robot_names = Some(str_vec_to_string_vec(&robot_names));
+        self._configuration_names = Some( str_option_vec_to_string_option_vec(&configuration_names) );
+        self._robot_set_name = None;
         Ok(())
     }
 
     pub fn update_robot_set_from_set_name(&mut self, robot_set_name: &str) -> Result<(), String> {
         let robot_set = RobotSet::new_from_set_name(robot_set_name)?;
         self._robot_set = robot_set;
+        self._robot_names = None;
+        self._configuration_names = None;
+        self._robot_set_name = Some(robot_set_name.to_string());
         Ok(())
     }
 
     pub fn update_robot_set_with_given_set(&mut self, robot_set: RobotSet) {
+        self._robot_names = robot_set.robot_names.clone();
+        self._configuration_names = robot_set.configuration_names.clone();
+        self._robot_set_name = robot_set.robot_set_name.clone();
         self._robot_set = robot_set;
     }
 
@@ -320,12 +330,14 @@ impl RobotWorld {
         self._collision_environment = None;
         if environment_name.is_some() {
             self._collision_environment = Some(CollisionEnvironment::new_with_environment_name(environment_name.unwrap())?);
+            self._collision_environment.as_mut().unwrap().update_bounding_volumes_on_all_environment_obbs();
         }
         Ok(())
     }
 
     pub fn update_collision_environment_with_given_collision_environment(&mut self, collision_environment: CollisionEnvironment) {
         self._collision_environment = Some(collision_environment);
+        self._collision_environment.as_mut().unwrap().update_bounding_volumes_on_all_environment_obbs();
     }
 
     pub fn set_robot_set(&mut self, robot_set: RobotSet) {

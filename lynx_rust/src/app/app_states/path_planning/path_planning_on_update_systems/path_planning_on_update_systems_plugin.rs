@@ -6,7 +6,7 @@ use crate::app::app_utils::asset_utils::robot_set_asset_loader::RobotSetAssetLoa
 use crate::utils::utils_vars::prelude::LynxVarsGeneric;
 use std::time::{Instant, Duration};
 use crate::app::app_states::path_planning::path_planning_state_plugin::path_planning_enter_generic;
-use crate::app::app_states::path_planning::path_planning_res_comps::PathPlanningPlaybackPack;
+use crate::app::app_states::path_planning::path_planning_res_comps::{PathPlanningPlaybackPack, PathPlanningStartAndGoalStatePack};
 use crate::app::app_utils::robot_utils::animate_along_path::animate_robot_along_path_single_step;
 use crate::robot_modules::robot_world::RobotWorld;
 
@@ -31,9 +31,18 @@ fn reset_on_load_new_robot(mut robot_set_entity_server: ResMut<RobotSetEntityAnd
                            mut commands: Commands,
                            asset_server: Res<AssetServer>,
                            mut materials: ResMut<Assets<StandardMaterial>>,
-                           mut instant_container: ResMut<InstantContainer>) {
+                           mut instant_container: ResMut<InstantContainer>,
+                           mut path_planning_start_and_goal_state_pack: ResMut<PathPlanningStartAndGoalStatePack>,
+                           mut transform_query: Query<&mut Transform>) {
     if instant_container.robot_reset.elapsed() <= Duration::from_millis(200) {
-        path_planning_enter_generic(&mut robot_set_entity_server, &mut robot_set_asset_loader, &mut lynx_vars, &mut commands, &asset_server, &mut materials);
+        path_planning_enter_generic(&mut robot_set_entity_server,
+                                    &mut robot_set_asset_loader,
+                                    &mut lynx_vars,
+                                    &mut commands,
+                                    &asset_server,
+                                    &mut materials,
+                                    &mut path_planning_start_and_goal_state_pack,
+                                    &mut transform_query);
     }
 }
 

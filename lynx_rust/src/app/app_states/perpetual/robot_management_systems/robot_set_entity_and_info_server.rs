@@ -126,7 +126,7 @@ impl RobotSetEntityAndInfoServer {
         let check = self._individual_robot_set_entity_and_info_container.get_mut(robot_server_vector_idx);
         let mut r = if check.is_some() { check.unwrap() } else { return Err(format!("robot_server_vector_idx ({:?}) is too high", robot_server_vector_idx)) };
 
-        return r.set_robot_set_joint_values_ref(new_values);
+        return r.set_robot_set_joint_values(new_values);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -676,7 +676,7 @@ impl IndividualRobotSetEntityAndInfoContainer {
         return &mut self._robot_set_joint_values;
     }
 
-    pub fn set_robot_set_joint_values_ref(&mut self, new_robot_set_joint_values: &DVector<f64>) -> Result<(), String> {
+    pub fn set_robot_set_joint_values(&mut self, new_robot_set_joint_values: &DVector<f64>) -> Result<(), String> {
         let l = self._robot_set_joint_values.len();
         if new_robot_set_joint_values.len() != l {
             return Err(format!("new_robot_set_joint_values does not have the right number of DOFs ({:?} instead of {:?})", l, new_robot_set_joint_values.len()));
