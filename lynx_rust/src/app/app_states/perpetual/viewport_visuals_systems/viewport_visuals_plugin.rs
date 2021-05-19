@@ -13,6 +13,7 @@ impl Plugin for ViewportVisualsPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app
             .add_startup_system(draw_grid_lines.system())
+            .add_system(grid_lines_manager_system.system())
             .add_system(robot_mesh_hover_highlighting.system())
             .add_system(environment_mesh_hover_highlighting.system())
             .add_system(robot_mesh_focus_highlighting.system())

@@ -18,7 +18,9 @@ pub struct CurrentMainGUIValues {
     pub save_joint_state_window_open: bool,
     pub save_joint_state_string: String,
     pub load_joint_state_window_open: bool,
-    pub load_joint_state_string: String
+    pub load_joint_state_string: String,
+    pub grid_visible: bool,
+    pub just_clicked_grid_visible_toggle: bool
 }
 impl CurrentMainGUIValues {
     pub fn new() -> Self {
@@ -39,7 +41,9 @@ impl CurrentMainGUIValues {
             save_joint_state_window_open: false,
             save_joint_state_string: "".to_string(),
             load_joint_state_window_open: false,
-            load_joint_state_string: "".to_string()
+            load_joint_state_string: "".to_string(),
+            grid_visible: true,
+            just_clicked_grid_visible_toggle: false
         }
     }
 }

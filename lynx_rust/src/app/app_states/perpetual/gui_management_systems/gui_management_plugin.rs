@@ -60,6 +60,10 @@ fn main_gui_system(egui_context: Res<EguiContext>,
                 ui.separator();
                 let robot_world = get_lynx_var_mut_ref_generic!(&mut *lynx_vars, RobotWorld, "robot_world").expect("error loading robot world");
                 collision_information_selector(ui, &egui_context, &mut current_main_gui_values, &mut collision_window_variables, &mut robot_set_entity_and_info_server, &mut env_entity_and_info_server, robot_world);
+                ui.separator();
+                if ui.checkbox(&mut current_main_gui_values.grid_visible, "Grid Visible").clicked() {
+                    current_main_gui_values.just_clicked_grid_visible_toggle = true;
+                }
             });
         });
     } else {
