@@ -5,7 +5,7 @@ use lynx_lib::prelude::*;
 fn main() -> Result<(), String> {
 
     // load robot
-    let mut robot = Robot::new("nao", None)?;
+    let mut robot = Robot::new("ur5", None)?;
 
     // print link order
     robot.get_configuration_module_ref().robot_model_module.print_link_order();
