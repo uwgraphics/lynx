@@ -13,6 +13,8 @@ pub fn animate_robot_along_path_single_step(robot_set_entity_server: &mut ResMut
                                             time: &Res<Time>,
                                             robot_server_vector_idx: usize,
                                             path_and_arclength_value: &mut (&mut LinearSplinePath, &mut f64),
+                                            is_playing: bool,
+                                            playback_speed_value: f64,
                                             transform_query: &mut Query<(&mut Transform)>) {
     let solution_path_ref = &mut path_and_arclength_value.0;
     let mut arclength_value = &mut path_and_arclength_value.1;
@@ -22,6 +24,7 @@ pub fn animate_robot_along_path_single_step(robot_set_entity_server: &mut ResMut
     *robot_set_entity_server.get_all_individual_robot_set_entity_and_info_containers_mut_ref()[robot_server_vector_idx].get_robot_set_joint_values_mut_ref() = new_pose.clone();
     update_robot_link_transforms(&new_pose, &robot_set, &mut *robot_set_entity_server, robot_server_vector_idx, transform_query);
 
+    /*
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(
         robot_server_vector_idx,
         LynxMaterialType::Interpolate {
@@ -30,9 +33,12 @@ pub fn animate_robot_along_path_single_step(robot_set_entity_server: &mut ResMut
             u: **arclength_value,
             alpha: 1.0,
         });
+    */
 
-        **arclength_value += 0.15 * time.delta_seconds_f64();
-    if **arclength_value >= 1.1 {
-        **arclength_value = 0.0;
+    if is_playing {
+        **arclength_value += playback_speed_value * 0.15 * time.delta_seconds_f64();
+        if **arclength_value >= 1.1 {
+            **arclength_value = 0.0;
+        }
     }
 }

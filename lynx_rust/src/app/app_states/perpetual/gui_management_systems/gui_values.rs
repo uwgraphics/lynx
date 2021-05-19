@@ -14,7 +14,11 @@ pub struct CurrentMainGUIValues {
     pub display_self_collision_information: bool,
     pub display_multi_robot_collision_information: bool,
     pub display_environment_collision_information: bool,
-    pub display_collision_information: bool
+    pub display_collision_information: bool,
+    pub save_joint_state_window_open: bool,
+    pub save_joint_state_string: String,
+    pub load_joint_state_window_open: bool,
+    pub load_joint_state_string: String
 }
 impl CurrentMainGUIValues {
     pub fn new() -> Self {
@@ -31,7 +35,11 @@ impl CurrentMainGUIValues {
             display_self_collision_information: false,
             display_multi_robot_collision_information: false,
             display_environment_collision_information: false,
-            display_collision_information: false
+            display_collision_information: false,
+            save_joint_state_window_open: false,
+            save_joint_state_string: "".to_string(),
+            load_joint_state_window_open: false,
+            load_joint_state_string: "".to_string()
         }
     }
 }

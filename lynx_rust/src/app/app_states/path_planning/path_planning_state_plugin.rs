@@ -69,16 +69,16 @@ pub fn path_planning_enter_generic(robot_set_entity_server: &mut ResMut<RobotSet
 
     robot_set_entity_server.hide_robot(0);
 
-    while robot_set_entity_server.get_num_individual_robot_set_entity_and_info_containers() < 4 {
+    while robot_set_entity_server.get_num_individual_robot_set_entity_and_info_containers() < 3 {
         spawn_robot_set(robot_set, commands, &asset_server, materials, robot_set_entity_server, robot_set_asset_loader, RobotLinkSpawnType::Visualization, Some(LynxMaterialType::Default));
     }
 
     robot_set_entity_server.unhide_robot(1);
     robot_set_entity_server.unhide_robot(2);
-    robot_set_entity_server.hide_robot(3);
+    // robot_set_entity_server.hide_robot(3);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(1, LynxMaterialType::PathPlanningStart);
     robot_set_entity_server.change_link_base_material_data_whole_robot_set(2, LynxMaterialType::PathPlanningGoal);
-    robot_set_entity_server.change_link_base_material_data_whole_robot_set(3, LynxMaterialType::Default);
+    // robot_set_entity_server.change_link_base_material_data_whole_robot_set(3, LynxMaterialType::Default);
 
     if path_planning_start_and_goal_state_pack.start_state.is_some() && path_planning_start_and_goal_state_pack.goal_state.is_some() {
         robot_set_entity_server.get_all_individual_robot_set_entity_and_info_containers_mut_ref()[1].set_robot_set_joint_values(&path_planning_start_and_goal_state_pack.start_state.as_ref().unwrap());

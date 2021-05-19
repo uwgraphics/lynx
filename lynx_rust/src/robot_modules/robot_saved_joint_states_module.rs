@@ -35,6 +35,8 @@ impl RobotSavedJointStatesModule {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn add_state(&mut self, state: &DVector<f64>, name: String) {
+        if self._configuration_name == "manual" { return; }
+
         if state.len() != self._num_dofs { return; }
 
         let hashmap_check = self._names_hashmap.get(&name);
@@ -49,6 +51,7 @@ impl RobotSavedJointStatesModule {
                 self._default_joint_state_idx = Some(add_idx);
             }
         }
+        self.save_to_file();
     }
 
     pub fn get_state_by_name(&self, name: &String) -> Option<DVector<f64>> {
@@ -68,6 +71,17 @@ impl RobotSavedJointStatesModule {
         } else {
             None
         }
+    }
+
+    pub fn get_all_joint_state_name_options(&self) -> Vec<String> {
+        let mut out_vec = Vec::new();
+
+        let keys = self._names_hashmap.keys();
+        for k in keys {
+            out_vec.push(k.clone());
+        }
+
+        return out_vec;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

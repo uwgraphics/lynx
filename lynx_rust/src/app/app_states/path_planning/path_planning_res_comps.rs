@@ -4,7 +4,9 @@ use nalgebra::DVector;
 pub struct PathPlanningPlaybackPack {
     pub arclength_curr_value: f64,
     pub curr_solution: Option<LinearSplinePath>,
-    pub display_playback_path: bool
+    pub display_playback_path: bool,
+    pub playback_speed_slider_value: f64,
+    pub playing: bool
 }
 
 impl PathPlanningPlaybackPack {
@@ -12,7 +14,9 @@ impl PathPlanningPlaybackPack {
         Self {
             arclength_curr_value: 0.0,
             curr_solution: None,
-            display_playback_path: false
+            display_playback_path: false,
+            playback_speed_slider_value: 0.5,
+            playing: false
         }
     }
 

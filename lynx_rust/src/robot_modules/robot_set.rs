@@ -126,6 +126,20 @@ impl RobotSet {
         return Ok(out_vec);
     }
 
+    pub fn glue_split_state_vectors_into_full_state_vector(split_state_vectors: &Vec<DVector<f64>>) -> DVector<f64> {
+        let mut out_vec = Vec::new();
+
+        let l1 = split_state_vectors.len();
+        for i in 0..l1 {
+            let l2 = split_state_vectors[i].len();
+            for j in 0..l2 {
+                out_vec.push(split_state_vectors[i][j]);
+            }
+        }
+
+        return vec_to_dvec(&out_vec);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     pub fn check_if_state_is_within_bounds(&self, full_state_vec: &DVector<f64>) -> Result<BoundsCheckResult, String> {

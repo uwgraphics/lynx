@@ -53,6 +53,8 @@ fn solution_playback_animation(mut robot_set_entity_server: ResMut<RobotSetEntit
                                mut transform_query: Query<(&mut Transform)>) {
 
     if path_planning_playback_pack.display_playback_path && path_planning_playback_pack.curr_solution.is_some() {
+        let playback_speed_slider_value = path_planning_playback_pack.playback_speed_slider_value.clone();
+        let is_playing = path_planning_playback_pack.playing.clone();
         let curr_solution_ref = path_planning_playback_pack.curr_solution.as_ref().unwrap();
 
         let robot_world = get_lynx_var_ref_generic!(&*lynx_vars, RobotWorld, "robot_world").expect("error loading robot world");
@@ -61,8 +63,10 @@ fn solution_playback_animation(mut robot_set_entity_server: ResMut<RobotSetEntit
         animate_robot_along_path_single_step(&mut robot_set_entity_server,
                                              robot_set,
                                              &time,
-                                             3,
+                                             0,
                                              path_planning_playback_pack.get_path_mut_ref_and_arclength_curr_value_mut_ref().as_mut().unwrap(),
+                                             is_playing,
+                                             playback_speed_slider_value,
                                              &mut transform_query);
 
     }

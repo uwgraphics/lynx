@@ -17,7 +17,7 @@ use crate::app::app_states::path_planning::path_planning_res_comps::{PathPlannin
 use bevy_egui::egui::Color32;
 use crate::utils::utils_path_planning::path_planning_query::PathPlanningQuery;
 use crate::utils::utils_files_and_strings::prelude::*;
-
+use bevy_egui::egui::style::Widgets;
 
 
 pub struct PathPlanningGUIPlugin;
@@ -26,23 +26,23 @@ impl Plugin for PathPlanningGUIPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_system_set(
             SystemSet::on_update(AppState::PathPlanning)
-                .with_system(path_planning_sliders_gui_system.system()).after("main_gui")
+                .with_system(path_planning_gui_system.system()).after("main_gui")
         );
     }
 }
 
-fn path_planning_sliders_gui_system(egui_context: Res<EguiContext>,
-                                    mut lynx_vars: ResMut<LynxVarsGeneric<'static>>,
-                                    mut current_main_gui_values: ResMut<CurrentMainGUIValues>,
-                                    mut robot_set_entity_and_info_server: ResMut<RobotSetEntityAndInfoServer>,
-                                    mut transform_query: Query<(&mut Transform)>,
-                                    key: Res<Input<KeyCode>>,
-                                    mut path_planning_gui_values: ResMut<PathPlanningGUIValues>,
-                                    mut path_planning_playback_pack: ResMut<PathPlanningPlaybackPack>,
-                                    mut spawn_new_robot: ResMut<SpawnNewPhysicalRobot>,
-                                    mut spawn_new_environment: ResMut<SpawnNewEnvironment>,
-                                    mut path_planning_start_and_goal_state_pack: ResMut<PathPlanningStartAndGoalStatePack>) {
-    if key.just_pressed(KeyCode::T)
+fn path_planning_gui_system(egui_context: Res<EguiContext>,
+                            mut lynx_vars: ResMut<LynxVarsGeneric<'static>>,
+                            mut current_main_gui_values: ResMut<CurrentMainGUIValues>,
+                            mut robot_set_entity_and_info_server: ResMut<RobotSetEntityAndInfoServer>,
+                            mut transform_query: Query<(&mut Transform)>,
+                            key: Res<Input<KeyCode>>,
+                            mut path_planning_gui_values: ResMut<PathPlanningGUIValues>,
+                            mut path_planning_playback_pack: ResMut<PathPlanningPlaybackPack>,
+                            mut spawn_new_robot: ResMut<SpawnNewPhysicalRobot>,
+                            mut spawn_new_environment: ResMut<SpawnNewEnvironment>,
+                            mut path_planning_start_and_goal_state_pack: ResMut<PathPlanningStartAndGoalStatePack>) {
+    if key.just_pressed(KeyCode::T) && (key.pressed(KeyCode::LShift) || key.pressed(KeyCode::RShift))
         && !(path_planning_gui_values.path_planning_query_load_window_open)
         && !(path_planning_gui_values.path_planning_query_save_window_open) {
         current_main_gui_values.hide_application_gui = !current_main_gui_values.hide_application_gui;
@@ -55,10 +55,10 @@ fn path_planning_sliders_gui_system(egui_context: Res<EguiContext>,
 
             egui::ScrollArea::auto_sized().id_source("path_planning_gui_scroll_area").show(ui, |ui| {
                 egui::CollapsingHeader::new("Start Joint Value Sliders").default_open(false).show(ui, |ui| {
-                    joint_value_sliders_gui_system_generic(ui, &mut lynx_vars, &key, &mut transform_query, "Start Joint Value Sliders", &mut robot_set_entity_and_info_server, 1, false);
+                    joint_value_sliders_gui_system_generic(&egui_context, ui, &mut lynx_vars, &key, &mut transform_query, "Start Joint Value Sliders", &mut robot_set_entity_and_info_server, 1, false, &mut current_main_gui_values);
                 });
                 egui::CollapsingHeader::new("Goal Joint Value Sliders").default_open(false).show(ui, |ui| {
-                    joint_value_sliders_gui_system_generic(ui, &mut lynx_vars, &key, &mut transform_query, "Goal Joint Value Sliders", &mut robot_set_entity_and_info_server, 2, false);
+                    joint_value_sliders_gui_system_generic(&egui_context, ui, &mut lynx_vars, &key, &mut transform_query, "Goal Joint Value Sliders", &mut robot_set_entity_and_info_server, 2, false, &mut current_main_gui_values);
                 });
 
                 ui.group(|ui| {
@@ -79,13 +79,55 @@ fn path_planning_sliders_gui_system(egui_context: Res<EguiContext>,
                     ui.set_enabled(path_planning_playback_pack.curr_solution.is_some());
                     if ui.checkbox(&mut path_planning_playback_pack.display_playback_path, "Solution Visible").clicked() {
                         if !path_planning_playback_pack.display_playback_path {
-                            robot_set_entity_and_info_server.hide_robot(3);
+                            robot_set_entity_and_info_server.hide_robot(0);
                         } else {
                             path_planning_playback_pack.arclength_curr_value = 0.0;
-                            robot_set_entity_and_info_server.unhide_robot(3);
-                            robot_set_entity_and_info_server.reset_link_material_data_whole_robot_set(3);
+                            robot_set_entity_and_info_server.unhide_robot(0);
+                            robot_set_entity_and_info_server.reset_link_material_data_whole_robot_set(0);
                         }
                     }
+
+                    ui.set_enabled(path_planning_playback_pack.display_playback_path);
+                    ui.horizontal(|ui| {
+                        ui.label("play position");
+                        if ui.add(
+                            // egui::Slider::new(&mut path_planning_playback_pack.arclength_curr_value, 0.0..=1.0).show_value(false)
+                            egui::DragValue::new(&mut path_planning_playback_pack.arclength_curr_value).speed(0.001).fixed_decimals(6).clamp_range(0.0..=1.10001)
+                        ).changed() {
+                            path_planning_playback_pack.playing = false;
+                        }
+                    });
+
+                    ui.horizontal(|ui| {
+                        ui.label("play speed");
+                        ui.add(
+                            egui::Slider::new(&mut path_planning_playback_pack.playback_speed_slider_value, 0.0..=1.0).show_value(false)
+                        );
+                    });
+
+                    ui.horizontal(|ui| {
+                        if path_planning_playback_pack.playing {
+                            if ui.button("⏸").clicked() {
+                                path_planning_playback_pack.playing = false;
+                            }
+                        } else {
+                            if ui.button("⏵").clicked() {
+                                path_planning_playback_pack.playing = true;
+                            }
+                        }
+
+                        if ui.button("⏮").clicked() {
+                            path_planning_playback_pack.arclength_curr_value -= 0.01;
+                            path_planning_playback_pack.arclength_curr_value = path_planning_playback_pack.arclength_curr_value.max(0.0);
+                            path_planning_playback_pack.playing = false;
+                        }
+
+                        if ui.button("⏭").clicked() {
+                            path_planning_playback_pack.arclength_curr_value += 0.01;
+                            path_planning_playback_pack.arclength_curr_value = path_planning_playback_pack.arclength_curr_value.min(1.0);
+                            path_planning_playback_pack.playing = false;
+                        }
+                    });
                 });
 
                 ui.separator();
@@ -116,7 +158,7 @@ fn path_planning_sliders_gui_system(egui_context: Res<EguiContext>,
                         let robot_world = get_lynx_var_ref_generic!(&mut *lynx_vars, RobotWorld, "robot_world").expect("error loading robot_world");
                         let base_sampler = robot_world.get_robot_set_ref().to_lynx_float_vec_sampler_box();
 
-                        if a.is_in_collision() || b.is_in_collision() {
+                        if a.is_in_collision() || b.is_in_collision() || (q_init == q_goal) {
                             println!("yes!");
                         } else {
                             match path_planning_gui_values.curr_path_planner {
@@ -132,7 +174,8 @@ fn path_planning_sliders_gui_system(egui_context: Res<EguiContext>,
                                             path_planning_playback_pack.curr_solution = Some(s.clone());
                                             path_planning_playback_pack.arclength_curr_value = 0.0;
                                             path_planning_playback_pack.display_playback_path = true;
-                                            robot_set_entity_and_info_server.unhide_robot(3);
+                                            path_planning_playback_pack.playing = true;
+                                            robot_set_entity_and_info_server.unhide_robot(0);
                                         }
                                         PathPlannerResult::SolutionNotFoundButPartialSolutionReturned(s) => {}
                                         PathPlannerResult::SolutionNotFound(_) => {}
@@ -190,7 +233,6 @@ fn path_planning_sliders_gui_system(egui_context: Res<EguiContext>,
                     if !path_planning_query_save_window_open { path_planning_gui_values.path_planning_query_save_window_open = false; }
                     path_planning_gui_values.path_planning_query_save_string = path_planning_query_save_string.clone();
                 }
-
 
                 if path_planning_gui_values.path_planning_query_load_window_open {
                     let mut path_planning_query_load_window_open = path_planning_gui_values.path_planning_query_load_window_open.clone();

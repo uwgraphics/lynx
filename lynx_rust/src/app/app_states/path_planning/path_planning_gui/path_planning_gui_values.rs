@@ -7,7 +7,7 @@ pub struct PathPlanningGUIValues {
     pub path_planning_query_save_window_open: bool,
     pub path_planning_query_save_string: String,
     pub path_planning_query_load_window_open: bool,
-    pub path_planning_query_load_string: String
+    pub path_planning_query_load_string: String,
 }
 
 impl PathPlanningGUIValues {

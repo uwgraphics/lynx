@@ -29,23 +29,35 @@ pub fn joint_value_sliders_gui_system(egui_context: Res<EguiContext>,
                                       mut transform_query: Query<(&mut Transform)>,
                                       key: Res<Input<KeyCode>>,
                                       ) {
-    if key.just_pressed(KeyCode::T) { current_main_gui_values.hide_application_gui = !current_main_gui_values.hide_application_gui; }
+    if key.just_pressed(KeyCode::T) && (key.pressed(KeyCode::RShift) || key.pressed(KeyCode::LShift)) { current_main_gui_values.hide_application_gui = !current_main_gui_values.hide_application_gui; }
 
     if !current_main_gui_values.hide_application_gui {
         egui::SidePanel::left("joint_value_sliders_panel", 220.).show(egui_context.ctx(), |ui| {
-            joint_value_sliders_gui_system_generic(ui, &mut lynx_vars, &key, &mut transform_query, "Joint Value Sliders", &mut robot_set_entity_and_info_server, 0, true);
+            joint_value_sliders_gui_system_generic(&egui_context,
+                                                   ui,
+                                                   &mut lynx_vars,
+                                                   &key,
+                                                   &mut transform_query,
+                                                   "Joint Value Sliders",
+                                                   &mut robot_set_entity_and_info_server,
+                                                   0,
+                                                   true,
+                                                   &mut current_main_gui_values);
         });
     }
 }
 
-pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
+/*
+pub fn joint_value_sliders_gui_system_generic(egui_context: &Res<EguiContext>,
+                                              ui: &mut Ui,
                                               lynx_vars: &mut ResMut<LynxVarsGeneric<'static>>,
                                               key: &Res<Input<KeyCode>>,
                                               transform_query: &mut Query<(&mut Transform)>,
                                               heading: &str,
                                               robot_set_entity_and_info_server: &mut RobotSetEntityAndInfoServer,
                                               robot_server_vector_idx: usize,
-                                              show_heading: bool) {
+                                              show_heading: bool,
+                                              current_main_gui_values: &mut ResMut<CurrentMainGUIValues>) {
 
     let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
     if robot_set_joint_values_res.is_err() { return; }
@@ -57,8 +69,8 @@ pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
             ui.separator();
         }
 
-        let robot_world = get_lynx_var_ref_generic!(& **lynx_vars, RobotWorld, "robot_world").expect("error loading RobotWorld");
-        let robot_set = robot_world.get_robot_set_ref();
+        let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading RobotWorld");
+        let mut robot_set = robot_world.get_robot_set_mut_ref();
 
         let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
         let robot_set_joint_values = robot_set_joint_values_res.unwrap().clone();
@@ -76,13 +88,43 @@ pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
             if i > 0 { dof_running_total += robot_set.get_robots_ref()[i - 1].get_dof_module_ref().get_num_dofs() }
             egui::CollapsingHeader::new(format!("Robot {:?}: {}", i + 1, robot.get_robot_name_ref())).id_source(heading.to_string() + "b" + usize_to_string(i).as_str()).default_open(true).show(ui, |ui| {
                 ui.horizontal(|ui| {
+                    let configuration_name = robot_set.get_robots_ref()[i].get_configuration_module_ref().configuration_name.clone();
+                    ui.set_enabled(configuration_name != "manual");
                     if ui.button("Save State").clicked() {
-
+                        current_main_gui_values.save_joint_state_window_open = true;
+                        current_main_gui_values.load_joint_state_window_open = false;
                     }
                     if ui.button("Load State").clicked() {
-
+                        current_main_gui_values.load_joint_state_window_open = true;
+                        current_main_gui_values.save_joint_state_window_open = false;
                     }
                 });
+
+                if current_main_gui_values.save_joint_state_window_open {
+                    // let mut robot_world = lynx_vars.get_robot_world_mut_ref(None).expect("error");
+                    // let mut robot_set = robot_world.get_robot_set_mut_ref();
+                    // let mut saved_joint_states_module = robot_set.get_robots_mut_ref()[i].get_saved_joint_states_module_mut_ref();
+
+                    let mut save_joint_state_window_open = current_main_gui_values.save_joint_state_window_open.clone();
+                    let mut save_joint_state_string = current_main_gui_values.save_joint_state_string.clone();
+                    egui::Window::new("Save Joint State")
+                        .open(&mut current_main_gui_values.save_joint_state_window_open)
+                        .collapsible(false)
+                        .show(egui_context.ctx(), |ui| {
+                            ui.horizontal(|ui| {
+                                ui.text_edit_singleline(&mut save_joint_state_string);
+                                if ui.button("Save").clicked() {
+                                    let robot_state = robot_split_state[i].clone();
+                                    // saved_joint_states_module.add_state(&robot_state, save_joint_state_string.clone());
+                                    // save_joint_state_window_open = false;
+                                }
+                            });
+                        });
+
+                    current_main_gui_values.save_joint_state_string = save_joint_state_string.clone();
+                    if !save_joint_state_window_open { current_main_gui_values.save_joint_state_window_open = false; }
+                }
+
                 ui.separator();
 
                 let bounds_module = robot.get_bounds_module_ref();
@@ -157,7 +199,7 @@ pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
             });
         }
         ui.separator();
-        if ui.button("Reset All").clicked() || key.just_pressed(KeyCode::R) {
+        if ui.button("Reset All").clicked() || (key.just_pressed(KeyCode::R) && (key.pressed(KeyCode::LAlt) || key.pressed(KeyCode::RAlt))) {
             let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
             let robot_set_joint_values = robot_set_joint_values_res.unwrap();
 
@@ -165,6 +207,227 @@ pub fn joint_value_sliders_gui_system_generic(ui: &mut Ui,
             // let full_joint_state = vec_to_dvec(&physical_robot_set_joint_values.0);
             let robot_set_joint_values = robot_set_joint_values.clone();
 
+            update_robot_link_transforms(&robot_set_joint_values, &robot_set, robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+        }
+    });
+
+}
+*/
+
+
+pub fn joint_value_sliders_gui_system_generic(egui_context: &Res<EguiContext>,
+                                              ui: &mut Ui,
+                                              lynx_vars: &mut ResMut<LynxVarsGeneric<'static>>,
+                                              key: &Res<Input<KeyCode>>,
+                                              transform_query: &mut Query<(&mut Transform)>,
+                                              heading: &str,
+                                              robot_set_entity_and_info_server: &mut RobotSetEntityAndInfoServer,
+                                              robot_server_vector_idx: usize,
+                                              show_heading: bool,
+                                              current_main_gui_values: &mut ResMut<CurrentMainGUIValues>) {
+
+    let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+    if robot_set_joint_values_res.is_err() { return; }
+    // let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+
+    egui::ScrollArea::auto_sized().id_source(heading.to_string() + "a").show(ui, |ui| {
+        if show_heading {
+            ui.heading(heading);
+            ui.separator();
+        }
+
+        // let mut robot_world = get_lynx_var_mut_ref_generic!(&mut **lynx_vars, RobotWorld, "robot_world").expect("error loading RobotWorld");
+        // let mut robot_set = robot_world.get_robot_set_mut_ref();
+
+        let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+        let robot_set_joint_values = robot_set_joint_values_res.unwrap().clone();
+
+        // let robot_full_state = &vec_to_dvec(&(*physical_robot_set_joint_values.0).to_vec());
+        let robot_set = lynx_vars.get_robot_world_ref(None).expect("error").get_robot_set_ref();
+        let mut robot_split_state_res = robot_set.split_full_state_vector_into_robot_state_vectors(&robot_set_joint_values);
+        if robot_split_state_res.is_err() { return; }
+        let mut robot_split_state = robot_split_state_res.as_mut().unwrap();
+
+        let mut dof_running_total = 1;
+        let num_robots = robot_set.get_num_robots();
+        for i in 0..num_robots {
+            let robot_set = lynx_vars.get_robot_world_ref(None).expect("error").get_robot_set_ref();
+            let robot = &robot_set.get_robots_ref()[i];
+            // let robot = &robot_set.get_robots_ref()[i];
+            let robot_state = &robot_split_state[i];
+            if i > 0 { dof_running_total += robot_set.get_robots_ref()[i - 1].get_dof_module_ref().get_num_dofs() }
+            let robot_name = robot.get_robot_name_ref().clone();
+            egui::CollapsingHeader::new(format!("Robot {:?}: {}", i + 1, robot_name)).id_source(heading.to_string() + "b" + usize_to_string(i).as_str()).default_open(true).show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    let robot_set = lynx_vars.get_robot_world_ref(None).expect("error").get_robot_set_ref();
+                    let configuration_name = robot_set.get_robots_ref()[i].get_configuration_module_ref().configuration_name.clone();
+                    ui.set_enabled(configuration_name != "manual");
+                    if ui.button("Save State").clicked() {
+                        current_main_gui_values.save_joint_state_window_open = true;
+                        current_main_gui_values.load_joint_state_window_open = false;
+                    }
+                    if ui.button("Load State").clicked() {
+                        current_main_gui_values.load_joint_state_window_open = true;
+                        current_main_gui_values.save_joint_state_window_open = false;
+                    }
+                });
+
+                if current_main_gui_values.save_joint_state_window_open {
+                    let mut robot_set = lynx_vars.get_robot_world_mut_ref(None).expect("error").get_robot_set_mut_ref();
+                    let mut saved_joint_states_module = robot_set.get_robots_mut_ref()[i].get_saved_joint_states_module_mut_ref();
+
+                    let mut save_joint_state_window_open = current_main_gui_values.save_joint_state_window_open.clone();
+                    let mut save_joint_state_string = current_main_gui_values.save_joint_state_string.clone();
+                    egui::Window::new("Save Joint State")
+                        .open(&mut current_main_gui_values.save_joint_state_window_open)
+                        .collapsible(false)
+                        .show(egui_context.ctx(), |ui| {
+                            ui.horizontal(|ui| {
+                                ui.text_edit_singleline(&mut save_joint_state_string);
+                                if ui.button("Save").clicked() {
+                                    if !(save_joint_state_string == "") {
+                                        let robot_state = robot_split_state[i].clone();
+                                        saved_joint_states_module.add_state(&robot_state, save_joint_state_string.clone());
+                                        save_joint_state_window_open = false;
+                                    }
+                                }
+                            });
+                        });
+
+                    current_main_gui_values.save_joint_state_string = save_joint_state_string.clone();
+                    if !save_joint_state_window_open { current_main_gui_values.save_joint_state_window_open = false; }
+                }
+
+                if current_main_gui_values.load_joint_state_window_open {
+                    let mut robot_set = lynx_vars.get_robot_world_mut_ref(None).expect("error").get_robot_set_mut_ref();
+
+                    let mut load_joint_state_window_open = current_main_gui_values.load_joint_state_window_open.clone();
+                    let mut load_joint_state_string = current_main_gui_values.load_joint_state_string.clone();
+
+                    let all_options = robot_set.get_robots_mut_ref()[i].get_saved_joint_states_module_mut_ref().get_all_joint_state_name_options();
+                    egui::Window::new("Save Joint State")
+                        .open(&mut current_main_gui_values.load_joint_state_window_open)
+                        .collapsible(false)
+                        .show(egui_context.ctx(), |ui| {
+                            egui::ScrollArea::auto_sized().show(ui, |ui| {
+                                for s in &all_options {
+                                    let mut selected = false;
+                                    if s == &load_joint_state_string { selected = true; }
+                                    if ui.selectable_label(selected, s.clone()).clicked() {
+                                        load_joint_state_string = s.clone();
+                                    };
+                                }
+                            });
+                            ui.separator();
+                            if ui.button("Load").clicked() {
+                                if !(load_joint_state_string == "") {
+                                    let mut saved_joint_states_module = robot_set.get_robots_mut_ref()[i].get_saved_joint_states_module_mut_ref();
+                                    let joint_state = saved_joint_states_module.get_state_by_name(&load_joint_state_string).expect("joint state not found");
+
+                                    // let mut robot_split_state_res = robot_set.split_full_state_vector_into_robot_state_vectors(&robot_set_joint_values);
+                                    // if robot_split_state_res.is_err() { return; }
+                                    // let mut robot_split_state = robot_split_state_res.as_mut().unwrap();
+
+                                    robot_split_state[i] = joint_state.clone();
+                                    let full_state_vector = RobotSet::glue_split_state_vectors_into_full_state_vector(&robot_split_state);
+
+                                    *robot_set_entity_and_info_server.get_all_individual_robot_set_entity_and_info_containers_mut_ref()[robot_server_vector_idx].get_robot_set_joint_values_mut_ref() = full_state_vector.clone();
+                                    update_robot_link_transforms(&full_state_vector, &robot_set, robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+
+                                    load_joint_state_window_open = false;
+                                }
+                            }
+                        });
+                    current_main_gui_values.load_joint_state_string = load_joint_state_string.clone();
+                    if !load_joint_state_window_open { current_main_gui_values.load_joint_state_window_open = false; }
+                }
+
+
+                ui.separator();
+
+                let robot_set = lynx_vars.get_robot_world_ref(None).expect("error").get_robot_set_ref();
+                let robot = &robot_set.get_robots_ref()[i];
+                let bounds_module = robot.get_bounds_module_ref();
+                let bounds = bounds_module.get_bounds();
+                let dof_module = robot.get_dof_module_ref();
+                let num_dofs = dof_module.get_num_dofs();
+                for j in 0..num_dofs {
+                    let res = dof_module.get_joint_idx_type_and_subidx_from_input_x_idx(j);
+                    let mut axis = Vector3::zeros();
+                    if res.1 == "rotation".to_string() {
+                        axis = dof_module.get_joints_copy_ref()[res.0].dof_rotation_axes[res.2].clone();
+                    } else {
+                        axis = dof_module.get_joints_copy_ref()[res.0].dof_translation_axes[res.2].clone();
+                    }
+
+                    let subjoint_type_str = if res.1 == "rotation" { "R" } else { "P" };
+                    egui::CollapsingHeader::new(format!("{}: {}. {}: [{},{},{}] ", dof_running_total + j, dof_module.get_joints_copy_ref()[res.0].name, subjoint_type_str, axis[0], axis[1], axis[2])).default_open(true).show(ui, |ui| {
+                        let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                        let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+                        if ui.add(
+                            egui::Slider::new(&mut robot_set_joint_values[dof_running_total + j - 1], bounds[j].0.max(-10.0)..=bounds[j].1.min(10.0))
+                        ).changed() {
+                            let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                            let robot_set_joint_values = robot_set_joint_values_res.unwrap().clone();
+                            // let full_joint_state = vec_to_dvec(&physical_robot_set_joint_values.0);
+                            update_robot_link_transforms(&robot_set_joint_values, &robot_set, robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+                        }
+
+                        ui.horizontal(|ui| {
+                            if ui.button("0.0").clicked() {
+                                let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                                let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+                                robot_set_joint_values[dof_running_total + j - 1] = 0.0;
+
+                                update_robot_link_transforms(&robot_set_joint_values.clone(), &robot_set, &mut *robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+                            }
+
+                            if ui.button("+.1").clicked() {
+                                let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                                let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+                                robot_set_joint_values[dof_running_total + j - 1] += 0.1;
+
+                                update_robot_link_transforms(&robot_set_joint_values.clone(), &robot_set, &mut *robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+                            }
+
+                            if ui.button("-.1").clicked() {
+                                let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                                let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+                                robot_set_joint_values[dof_running_total + j - 1] -= 0.1;
+
+                                update_robot_link_transforms(&robot_set_joint_values.clone(), &robot_set, &mut *robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+                            }
+
+                            if ui.button("+.01").clicked() {
+                                let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                                let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+                                robot_set_joint_values[dof_running_total + j - 1] += 0.01;
+
+                                update_robot_link_transforms(&robot_set_joint_values.clone(), &robot_set, &mut *robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+                            }
+
+                            if ui.button("-.01").clicked() {
+                                let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+                                let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+                                robot_set_joint_values[dof_running_total + j - 1] -= 0.01;
+
+                                update_robot_link_transforms(&robot_set_joint_values.clone(), &robot_set, &mut *robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+        ui.separator();
+        if ui.button("Reset All").clicked() || (key.just_pressed(KeyCode::R) && (key.pressed(KeyCode::LAlt) || key.pressed(KeyCode::RAlt))) {
+            let robot_set_joint_values_res = robot_set_entity_and_info_server.get_robot_set_joint_values_mut_ref(robot_server_vector_idx);
+            let robot_set_joint_values = robot_set_joint_values_res.unwrap();
+
+            for j in &mut robot_set_joint_values.iter_mut() { *j = 0.0; }
+            // let full_joint_state = vec_to_dvec(&physical_robot_set_joint_values.0);
+            let robot_set_joint_values = robot_set_joint_values.clone();
+
+            let robot_set = lynx_vars.get_robot_world_ref(None).expect("error").get_robot_set_ref();
             update_robot_link_transforms(&robot_set_joint_values, &robot_set, robot_set_entity_and_info_server, robot_server_vector_idx, transform_query);
         }
     });
