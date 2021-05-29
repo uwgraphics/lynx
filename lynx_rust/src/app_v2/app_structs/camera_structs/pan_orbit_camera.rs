@@ -1,9 +1,5 @@
 use bevy::math::Vec3;
 
-#[derive(Clone, PartialEq, Eq, Debug)]
-pub enum CameraType {
-    PanOrbitCamera
-}
 
 pub struct PanOrbitCamera {
     pub focus: Vec3,

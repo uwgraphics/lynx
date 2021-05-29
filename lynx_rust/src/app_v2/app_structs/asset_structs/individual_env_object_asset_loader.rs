@@ -3,7 +3,7 @@ use bevy::ecs::prelude::{Res, ResMut};
 use bevy::prelude::{Mesh, Scene};
 use bevy_stl;
 use crate::utils::utils_files_and_strings::prelude::*;
-use crate::app::app_utils::file_and_string_utils::directory_structure_utils::get_file_path_from_dummy_assets_to_mesh_environment_dir;
+use crate::app_v2::app_utils::file_and_string_utils::directory_structure_utils::get_file_path_from_dummy_assets_to_mesh_environment_dir;
 
 pub struct IndividualEnvObjectAssetLoader {
     _env_name: String,

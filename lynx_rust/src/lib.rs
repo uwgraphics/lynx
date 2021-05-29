@@ -591,6 +591,7 @@ pub mod utils;
 pub mod robot_modules;
 pub mod path_planning;
 pub mod app;
+pub mod app_v2;
 pub mod prelude;
 
 

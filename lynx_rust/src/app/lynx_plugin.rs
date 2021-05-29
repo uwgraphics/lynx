@@ -8,6 +8,8 @@ use bevy::app::{Plugin, AppBuilder};
 use bevy::prelude::{SystemSet};
 
 
+
+
 pub struct LynxPlugin;
 impl Plugin for LynxPlugin {
     fn build(&self, app: &mut AppBuilder) {
@@ -19,10 +21,5 @@ impl Plugin for LynxPlugin {
             .add_plugin(PerpetualPlugin)
             .add_plugin(JointValueSlidersStatePlugin)
             .add_plugin(PathPlanningStatePlugin);
-
     }
 }
-
-
-
-

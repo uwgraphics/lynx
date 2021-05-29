@@ -1,6 +1,7 @@
 use crate::utils::utils_vars::{lynx_vars::LynxVars, lynx_vars_parallel::LynxVarsParallel};
 use crate::robot_modules::robot::Robot;
 use crate::robot_modules::robot_world::RobotWorld;
+use crate::robot_modules::prelude::RobotSet;
 use rayon::prelude::*;
 
 #[derive(Debug)]
@@ -139,6 +140,16 @@ impl<'a> LynxVarsGeneric<'a> {
             None => { get_lynx_var_mut_ref_generic!(self, RobotWorld, "robot_world") }
             Some(n) => { get_lynx_var_mut_ref_generic!(self, RobotWorld, n) }
         }
+    }
+
+    pub fn get_robot_set_ref_via_robot_world(&self, robot_world_name: Option<&str>) -> Result<&RobotSet, String> {
+        let robot_world = self.get_robot_world_ref(robot_world_name)?;
+        return Ok(robot_world.get_robot_set_ref());
+    }
+
+    pub fn get_robot_set_mut_ref_via_robot_world(&mut self, robot_world_name: Option<&str>) -> Result<&mut RobotSet, String> {
+        let robot_world = self.get_robot_world_mut_ref(robot_world_name)?;
+        return Ok(robot_world.get_robot_set_mut_ref());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -3,7 +3,8 @@ use crate::app::app_states::perpetual::viewport_visuals_systems::{grid_lines::*,
                                                                   robot_mesh_hover_highlighting::*,
                                                                   robot_mesh_focus_highlighting::*,
                                                                   environment_mesh_hover_highlighting::*,
-                                                                  environment_mesh_focus_highlighting::*
+                                                                  environment_mesh_focus_highlighting::*,
+                                                                  background_color::*
 };
 use crate::app::app_states::app_states_enum::AppState;
 
@@ -17,6 +18,7 @@ impl Plugin for ViewportVisualsPlugin {
             .add_system(robot_mesh_hover_highlighting.system())
             .add_system(environment_mesh_hover_highlighting.system())
             .add_system(robot_mesh_focus_highlighting.system())
-            .add_system(environment_mesh_focus_highlighting.system());
+            .add_system(environment_mesh_focus_highlighting.system())
+            .add_system(background_greenscreen_system.system());
     }
 }

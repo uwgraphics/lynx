@@ -16,3 +16,5 @@ impl InstantContainer {
         }
     }
 }
+
+pub struct GreenScreenOn(pub bool);

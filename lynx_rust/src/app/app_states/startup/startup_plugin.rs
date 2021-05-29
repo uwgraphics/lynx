@@ -47,6 +47,7 @@ fn _insert_init_resources(commands: &mut Commands, asset_server: &Res<AssetServe
     commands.insert_resource(EnvironmentEntityAndInfoServer::new());
     commands.insert_resource(InstantContainer::new());
     commands.insert_resource(PathPlanningStartAndGoalStatePack::new());
+    commands.insert_resource(GreenScreenOn(false));
 }
 
 fn _spawn_init_lights(commands: &mut Commands) {
