@@ -94,3 +94,10 @@ pub enum RobotSetSpawnType {
     Physical
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EguiWindowType {
+    RobotSelection,
+    RobotConfigurationSelection,
+    RobotSetSelection
+}
+

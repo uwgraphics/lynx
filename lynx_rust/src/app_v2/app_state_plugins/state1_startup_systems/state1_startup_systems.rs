@@ -7,9 +7,10 @@ use crate::app_v2::app_actions::{
     light_actions::light_spawners::spawn_light
 };
 use crate::app_v2::app_structs::{
-    asset_structs::robot_set_asset_loader::RobotSetAssetLoader,
-    camera_structs::pan_orbit_camera::PanOrbitCamera,
-    robot_structs::robot_world_status_structs::*
+    asset_structs::robot_set_asset_loader::*,
+    camera_structs::pan_orbit_camera::*,
+    robot_structs::robot_world_status_structs::*,
+    gui_structs::egui_structs::*
 };
 use crate::app_v2::app_structs::game_engine_structs::game_engine_status_structs::FrameCount;
 use crate::robot_modules::prelude::*;
@@ -24,6 +25,7 @@ pub fn insert_init_resources(mut commands: Commands, asset_server: Res<AssetServ
     commands.insert_resource(lynx_vars_generic);
     commands.insert_resource(FrameCount::default());
     commands.insert_resource(NumberOfRobotSetsSpawnedInScene::default());
+    commands.insert_resource(EguiWindowContainer::new_empty());
 
     /*
     commands.insert_resource(RobotSetEntityAndInfoServer::new());
