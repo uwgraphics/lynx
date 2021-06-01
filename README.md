@@ -17,7 +17,7 @@ Lynx v0.1.0 provides some base features for robot modeling and planning.  The li
 
 The following features will be available in our Lynx v0.2.0 release by July 1, 2021:
 
-* The library will feature a built-in graphics engine with physically-based lighting and rendering, making it easy to interface with many robots for planning and motion optimization.
+* The library will feature a built-in graphics engine with physically-based lighting and rendering, making it easy to interface with many robots for planning and motion optimization.  A preview of this environment can be seen in images/lynx_preview.
 * Many more robotics algorithms will be implemented in the library, including RelaxedIK (published at RSS 2018), CollisionIK (published at ICRA 2021), and Strobe (published at ICRA 2021).   
 * The code will be better documented and the library as a whole will have more thorough instructions for setup and use.
 * A seperate repository will be released that will contain dozens of pre-processed robots and environments to use out of the box for any of our implemented algorithms.
