@@ -145,7 +145,7 @@ pub fn debug_per_frame_system2(keys: Res<Input<KeyCode>>,
 
     let mut a = egui_window_container.get_window_name_str_and_window_is_open_bundle(EguiWindowType::RobotSelection, None);
     bevy_egui::egui::Window::new("test2").id(Id::new(a.0.clone())).open(&mut a.1).show(egui_context.ctx(), |ui| {
-
+        if ui.rect_contains_pointer(ui.max_rect()) { println!("yes!"); }
     });
     if !(a.1) { egui_window_container.close_window_by_idx(a.2, true); }
 
