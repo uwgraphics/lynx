@@ -3,6 +3,8 @@
 ![version](https://img.shields.io/badge/version-0.1.0-blue)
 ![example workflow](https://github.com/uwgraphics/lynx/actions/workflows/ci.yml/badge.svg)
 
+![Logo](/images/logo-nobackground-200.png)
+
 Welcome to the Lynx Robotics Library!  The library will feature useful robotics applications, such as forward kinematics, inverse kinematics, path planning, trajectory optimization, and pathwise inverse kinematics.  It was designed to be general purpose and easy to set up, going straight from robot URDF to modeling, planning, and optimization within minutes.  
 
 
