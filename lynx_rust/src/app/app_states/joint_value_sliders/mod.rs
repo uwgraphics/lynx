@@ -1,2 +1,0 @@
-pub mod joint_value_sliders_state_plugin;
-pub mod joint_value_sliders_gui;

@@ -1,2 +1,0 @@
-pub mod robot_selection_choices;
-pub mod environment_selection_choices;

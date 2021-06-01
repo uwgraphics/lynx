@@ -1,9 +1,0 @@
-pub mod gui_management_plugin;
-pub mod gui_values;
-pub mod gui_management_res_comps;
-pub mod robot_selectors;
-pub mod environment_selector;
-pub mod app_state_selector;
-pub mod robot_link_focus_windows;
-pub mod collision_information_window;
-pub mod environment_focus_windows;
