@@ -3,7 +3,7 @@ use lynx_lib::prelude::*;
 
 
 fn main() -> Result<(), String> {
-    // load default robot module toolbox
+    // load default robot
     let mut robot = Robot::new("ur5", None)?;
 
     // compute forward kinematics using the fk_module

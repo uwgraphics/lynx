@@ -3,7 +3,7 @@ use lynx_lib::prelude::*;
 use nalgebra::{Vector3, UnitQuaternion, Quaternion};
 
 fn main() -> Result<(), String> {
-    // load default robot module toolbox
+    // load default robot
     let robot = Robot::new("ur5", None)?;
 
     // compute forward kinematics using the fk_module
@@ -22,7 +22,7 @@ fn main() -> Result<(), String> {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    // load robot module toolbox with mobile base
+    // load robot with mobile base
     let robot = Robot::new("ur5", Some("planar_base"))?;
 
     // compute forward kinematics using the fk_module, moving the mobile base 1 meter forward on the x axis
