@@ -17,6 +17,8 @@ use rand::distributions::{Distribution, Uniform};
 use rand::{Rng, SeedableRng};
 use rand::rngs::{ThreadRng, StdRng};
 use std::fmt;
+use serde::{Serialize, Deserialize};
+
 
 pub struct CollisionObject {
     pub name: String,
@@ -345,7 +347,6 @@ impl fmt::Debug for CollisionObject {
         Ok(())
     }
 }
-
 
 
 

@@ -3,14 +3,14 @@ use lynx_lib::prelude::*;
 
 
 fn main() -> Result<(), String> {
-    // load default robot module toolbox
-    let mut robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+    // load default robot
+    let mut robot = Robot::new("ur5", None)?;
 
     // compute forward kinematics using the fk_module
-    let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
+    let fk_result = robot.get_fk_module_ref().compute_fk_vec(&vec![0., 0., 0., 0., 0., 0.])?;
 
     // do self intersection test
-    let self_intersect_result = robot_module_toolbox.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+    let self_intersect_result = robot.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
 
     // print summary of result, should be Intersection Not Found
     self_intersect_result.print_summary();
@@ -19,10 +19,10 @@ fn main() -> Result<(), String> {
 
 
     // compute forward kinematics using the fk_module
-    let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,3.,0.,0.,0.])?;
+    let fk_result = robot.get_fk_module_ref().compute_fk_vec(&vec![0., 0., 3., 0., 0., 0.])?;
 
     // do self intersection test
-    let self_intersect_result = robot_module_toolbox.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+    let self_intersect_result = robot.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
 
     // print summary of result, should be Intersection Found between "base_link" and "wrist_2_link"
     self_intersect_result.print_summary();

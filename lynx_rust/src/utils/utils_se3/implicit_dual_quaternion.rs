@@ -111,13 +111,30 @@ impl ImplicitDualQuaternion {
         let mut new_translation = &new_quat * -self.translation.clone();
         return ImplicitDualQuaternion::new(new_quat, new_translation);
     }
+
+    pub fn set_is_identity(&mut self) {
+        let mut quat_is_identity = false;
+        if (self.quat.w.abs() - 1.0).abs() < 0.000001 && self.quat.i.abs() < 0.000001 && self.quat.j.abs() < 0.000001 && self.quat.k.abs() < 0.000001 {
+            self.quat_is_identity = true;
+        } else {
+            self.quat_is_identity = false;
+        }
+        let mut translation_is_zeros = false;
+        if self.translation[0].abs() < 0.000001 && self.translation[1].abs() < 0.000001 && self.translation[2] < 0.000001 {
+            self.translation_is_zeros = true;
+        } else {
+            self.translation_is_zeros = false;
+        }
+
+        self.is_identity = quat_is_identity && translation_is_zeros;
+    }
 }
 
 impl fmt::Debug for ImplicitDualQuaternion {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ImplicitDualQuaternion")
-         .field("quat", &self.quat)
-         .field("translation", &self.translation)
-         .finish()
+            .field("quat", &self.quat)
+            .field("translation", &self.translation)
+            .finish()
     }
 }

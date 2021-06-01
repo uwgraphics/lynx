@@ -1,6 +1,6 @@
 use crate::utils::utils_optimization::{objective_function::*, isolated_objective_term::*};
 use crate::utils::utils_vars::prelude::*;
-use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
+use crate::robot_modules::robot::Robot;
 use crate::utils::utils_recorders::prelude::*;
 use optimization_engine::{constraints::*, panoc::*, *};
 use nlopt::*;

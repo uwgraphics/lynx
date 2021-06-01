@@ -266,6 +266,22 @@ macro_rules! get_lynx_var_mut_ref_parallel {
     };
 }
 
+#[macro_use] #[macro_export]
+macro_rules! get_lynx_var_all_mut_refs_parallel {
+    ($lynx_vars_parallel: expr, $i: ident, $variable_name: expr) => {
+        {
+            let mut out: Vec<&mut $i> = Vec::new();
+            let mut it = $lynx_vars_parallel.get_iter_mut();
+            // let lynx_vars = $lynx_vars_parallel.get_first_mut_ref();
+            it.for_each(|x| {
+                out.push(get_lynx_var_mut_ref!(x, $i, $variable_name).expect(format!("variable {:?} not found in macro get_lynx_var_all_mut_refs_parallel", $variable_name).as_str()));
+            });
+            // let out = get_lynx_var_mut_ref!(lynx_vars, $i, $variable_name);
+            out
+        }
+    };
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -395,7 +411,33 @@ macro_rules! get_lynx_var_mut_ref_generic {
     };
 }
 
+#[macro_use] #[macro_export]
+macro_rules! get_lynx_var_all_mut_refs_generic {
+    ($lynx_vars_generic: expr, $i: ident, $variable_name: expr) => {
+        {
+            let mut out: Vec<&mut $i> = Vec::new();
+            match $lynx_vars_generic {
+                LynxVarsGeneric::SingleThreaded(v) => out = vec![get_lynx_var_mut_ref!(v, $i, $variable_name).expect("error in macro get_lynx_var_all_mut_refs_generic")],
+                LynxVarsGeneric::SingleThreadedMutRef(v) => out = vec![get_lynx_var_mut_ref!(v, $i, $variable_name).expect("error in macro get_lynx_var_all_mut_refs_generic")],
+                LynxVarsGeneric::Parallel(v) => out = get_lynx_var_all_mut_refs_parallel!(v, $i, $variable_name),
+            }
+            out
+        }
+    };
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[macro_use] #[macro_export]
+macro_rules! convert_to_json_string {
+    ($variable: expr) => {
+        {
+            let serialized = serde_json::to_string($variable).unwrap();
+            serialized
+        }
+    };
+}
+
 
 #[macro_use] #[macro_export]
 macro_rules! load_from_json_string {
@@ -548,6 +590,8 @@ macro_rules! write_to_recorder {
 pub mod utils;
 pub mod robot_modules;
 pub mod path_planning;
+// pub mod app;
+// pub mod app_v2;
 pub mod prelude;
 
 
@@ -557,9 +601,9 @@ mod tests {
     #[test]
     fn ur5_num_dof_test() -> Result<(), String> {
         use crate::robot_modules::prelude::*;
-        let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+        let robot = Robot::new("ur5", None)?;
 
-        assert_eq!(robot_module_toolbox.get_dof_module_ref().get_num_dofs(), 6);
+        assert_eq!(robot.get_dof_module_ref().get_num_dofs(), 6);
 
         Ok(())
     }
@@ -569,23 +613,39 @@ mod tests {
         use crate::robot_modules::prelude::*;
         use nalgebra::{Vector3, UnitQuaternion, Quaternion};
 
-        let robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
-        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
-        robot_module_toolbox.get_fk_module_ref().print_results_next_to_link_names(&fk_result, robot_module_toolbox.get_configuration_module_ref());
+        // load default robot module toolbox
+        let robot = Robot::new("ur5", None)?;
 
-        let ee_pos = fk_result.get_link_frames_ref()[7].as_ref().unwrap();
+        // compute forward kinematics using the fk_module
+        let fk_result = robot.get_fk_module_ref().compute_fk_vec(&vec![0., 0., 0., 0., 0., 0.])?;
 
-        assert_eq!(ee_pos.translation, Vector3::new(0.0, 0.19145, 1.001059));
-        assert_eq!(ee_pos.quat, UnitQuaternion::from_quaternion(Quaternion::new(0.7071067818211393, 0.0, 0.0, 0.7071067805519557)));
+        // print fk results next to the robot's link names
+        robot.get_fk_module_ref().print_results_next_to_link_names(&fk_result, robot.get_configuration_module_ref());
 
-        let robot_module_toolbox = RobotModuleToolbox::new("ur5", Some("planar_base"), None)?;
-        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.,1.,0.,0.])?;
-        robot_module_toolbox.get_fk_module_ref().print_results_next_to_link_names(&fk_result, robot_module_toolbox.get_configuration_module_ref());
+        let ee_link = fk_result.get_link_frames_ref()[7].as_ref().unwrap();
 
-        let ee_pos = fk_result.get_link_frames_ref()[7].as_ref().unwrap();
+        assert_eq!(ee_link.translation, Vector3::new(0.0, 0.19145, 1.001059));
+        assert_eq!(ee_link.quat, UnitQuaternion::from_quaternion(Quaternion::new(0.7071067818211393, 0.0, 0.0, 0.7071067805519557)));
 
-        assert_eq!(ee_pos.translation, Vector3::new(1.0, 0.19145, 1.001059));
-        assert_eq!(ee_pos.quat, UnitQuaternion::from_quaternion(Quaternion::new(0.7071067818211393, 0.0, 0.0, 0.7071067805519557)));
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        // load robot module toolbox with mobile base
+        let robot = Robot::new("ur5", Some("planar_base"))?;
+
+        // compute forward kinematics using the fk_module, moving the mobile base 1 meter forward on the x axis
+        let fk_result = robot.get_fk_module_ref().compute_fk_vec(&vec![0., 0., 0., 0., 0., 0., 1., 0., 0.])?;
+
+        // print fk results next to the robot's link names
+        robot.get_fk_module_ref().print_results_next_to_link_names(&fk_result, robot.get_configuration_module_ref());
+
+        let ee_link = fk_result.get_link_frames_ref()[7].as_ref().unwrap();
+
+        assert_eq!(ee_link.translation, Vector3::new(1.0, 0.19145, 1.001059));
+        assert_eq!(ee_link.quat, UnitQuaternion::from_quaternion(Quaternion::new(0.7071067818211393, 0.0, 0.0, 0.7071067805519557)));
+
 
         Ok(())
     }
@@ -596,24 +656,25 @@ mod tests {
         use nalgebra::{Vector3, UnitQuaternion, Quaternion};
 
         // load default robot module toolbox
-        let mut robot_module_toolbox = RobotModuleToolbox::new("ur5", None, None)?;
+        let mut robot = Robot::new("ur5", None)?;
 
         // compute forward kinematics using the fk_module
-        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
+        let fk_result = robot.get_fk_module_ref().compute_fk_vec(&vec![0., 0., 0., 0., 0., 0.])?;
 
         // do self intersection test
-        let self_intersect_result = robot_module_toolbox.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+        let self_intersect_result = robot.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
 
         // print summary of result, should be Intersection Not Found
         self_intersect_result.print_summary();
         assert_eq!(self_intersect_result.is_in_collision(), false);
 
 
+
         // compute forward kinematics using the fk_module
-        let fk_result = robot_module_toolbox.get_fk_module_ref().compute_fk_vec(&vec![0.,0.,3.,0.,0.,0.])?;
+        let fk_result = robot.get_fk_module_ref().compute_fk_vec(&vec![0., 0., 3., 0., 0., 0.])?;
 
         // do self intersection test
-        let self_intersect_result = robot_module_toolbox.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
+        let self_intersect_result = robot.get_core_collision_module_mut_ref().self_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
 
         // print summary of result, should be Intersection Found between "base_link" and "wrist_2_link"
         self_intersect_result.print_summary();
@@ -626,32 +687,32 @@ mod tests {
     #[test]
     fn ur5_environment_intersect_test() -> Result<(), String> {
         use crate::robot_modules::prelude::*;
-        use nalgebra::{Vector3, UnitQuaternion, Quaternion};
+        use crate::utils::utils_math::prelude::vec_to_dvec;
 
         // load robot world with environment "single_box" (included in assets/mesh_environments)
-        let mut robot_world = RobotWorld::new("ur5", None, None, Some("single_box"))?;
+        let mut robot_world = RobotWorld::new(vec!["ur5"], vec![None], Some("single_box"))?;
 
         // compute forward kinematics using the fk_module
-        let fk_result = robot_world.get_robot_module_toolbox_ref().get_fk_module_ref().compute_fk_vec(&vec![0.,0.,0.,0.,0.,0.])?;
+        let fk_result = robot_world.get_robot_set_ref().compute_fk(&vec_to_dvec(&vec![0.,0.,0.,0.,0.,0.]))?;
 
         // do environment intersection test
         let environment_intersect_result = robot_world.environment_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
 
         // print summary of result, should be Intersection Not Found
         environment_intersect_result.print_summary();
-        assert_eq!(environment_intersect_result.is_in_collision(), false);
+        assert_eq!(environment_intersect_result.in_collision(), false);
 
 
 
         // compute forward kinematics using the fk_module
-        let fk_result = robot_world.get_robot_module_toolbox_ref().get_fk_module_ref().compute_fk_vec(&vec![1.57,0.,-1.57,0.,0.,0.])?;
+        let fk_result = robot_world.get_robot_set_ref().compute_fk(&vec_to_dvec(&vec![1.57,0.0,-1.57,0.,0.,0.]))?;
 
         // do environment intersection test
         let environment_intersect_result = robot_world.environment_intersect_check(&fk_result, LinkGeometryType::OBBs, true)?;
 
         // print summary of result, should be Intersection Found between "box_0" and "forearm_link"
         environment_intersect_result.print_summary();
-        assert_eq!(environment_intersect_result.is_in_collision(), true);
+        assert_eq!(environment_intersect_result.in_collision(), true);
 
 
 

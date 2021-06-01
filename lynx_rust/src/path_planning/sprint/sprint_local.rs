@@ -36,7 +36,7 @@ impl SprintLocal {
         let mut q_x_idx = 0 as usize;
         let mut add_checkpoint = true;
 
-        for i in 0..1000 {
+        for i in 0..1000000 {
             if terminate.get_terminate() {
                 return Ok(PathPlannerResult::SolutionNotFound("early terminate.".to_string()));
             }
@@ -93,7 +93,6 @@ impl SprintLocal {
                 }
                 q_x_idx = n_stack.pop().unwrap();
             }
-
         }
 
         if self._debug { println!("{}{}>>>> No solution found.  Exiting on outer loop. {}", color::Fg(color::Red), style::Bold, style::Reset); }
@@ -556,7 +555,7 @@ pub fn probability_heuristic_2(q_x_idx: usize, sprint_local_data_manager: &mut S
         return Ok( false );
     }
 
-    let mut kappa = 0.45;
+    let mut kappa = 0.35;
     if kappa_.is_some() { kappa = kappa_.unwrap(); }
 
     // let mut all_idxs = vec![];

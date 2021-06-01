@@ -8,6 +8,12 @@ pub fn get_all_robot_options() -> Vec<String> {
     return all_robots
 }
 
+pub fn check_if_robot_is_valid_choice(robot_name: &str) -> bool {
+    let fp = get_path_to_src() + "/robots/" + robot_name;
+    let path_exists = check_if_path_exists(fp);
+    return path_exists;
+}
+
 pub fn robot_directory_includes_urdf(robot_name: String) -> bool {
     let fp = get_path_to_robots_folder() + robot_name.as_str();
 

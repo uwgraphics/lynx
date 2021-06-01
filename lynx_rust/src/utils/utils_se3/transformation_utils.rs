@@ -134,4 +134,3 @@ pub fn implicit_dual_quaternion_point3_displacement_transform(idq1: &ImplicitDua
     return (q_disp * p_centered) + &idq1.translation;
 }
 
-

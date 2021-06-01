@@ -57,6 +57,31 @@ pub fn glue_strings(s1: String, s2: String, separator: &str) -> String {
     s1 + separator + s2.as_str()
 }
 
+pub fn str_vec_to_string_vec(s: &Vec<&str>) -> Vec<String> {
+    let mut out_vec = Vec::new();
+    let l = s.len();
+    for i in 0..l {
+        out_vec.push(s[i].to_string());
+    }
+    out_vec
+}
+
+pub fn str_option_to_string_option(s: Option<&str>) -> Option<String> {
+    return if s.is_none() { None } else { Some(s.unwrap().to_string()) }
+}
+
+pub fn str_option_vec_to_string_option_vec(s: &Vec<Option<&str>>) -> Vec<Option<String>> {
+    let mut out_vec = Vec::new();
+
+    let l = s.len();
+    for i in 0..l {
+        out_vec.push( str_option_to_string_option(s[i]) );
+    }
+
+    out_vec
+}
+
+
 /*
 pub fn contains_exact(s: &String, substring: &String) -> bool {
     if s.contains(&substring.as_str()) {

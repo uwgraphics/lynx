@@ -25,6 +25,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+          
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        if: runner.os == 'linux'
 
       - name: Run cargo check
         uses: actions-rs/cargo@v1
@@ -46,6 +50,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        if: runner.os == 'linux'
 
       - name: Run cargo test
         uses: actions-rs/cargo@v1

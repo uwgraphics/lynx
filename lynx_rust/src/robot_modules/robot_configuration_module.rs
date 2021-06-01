@@ -2,11 +2,13 @@ use crate::robot_modules::robot_model_module::RobotModelModule;
 use crate::utils::utils_files_and_strings::robot_folder_utils::*;
 use crate::utils::utils_files_and_strings::file_utils::*;
 use crate::utils::utils_parsing::yaml_parsing_utils::*;
+use crate::utils::utils_se3::prelude::ImplicitDualQuaternion;
 use serde::{Serialize, Deserialize};
 use termion::{color, style};
 use crate::robot_modules::{link::Link, joint::Joint};
-use nalgebra::{Vector3};
+use nalgebra::{Vector3, UnitQuaternion};
 use std::collections::HashMap;
+use yaml_rust::yaml::Yaml::Null;
 
 /*
 Notes:
@@ -29,9 +31,11 @@ Mobile base mode: string that specifies the mode of the base.  Options are:
 pub struct  RobotConfigurationModule {
     pub configuration_name: String,
     pub robot_model_module: RobotModelModule,
+    pub base_offset: ImplicitDualQuaternion,
     pub dead_end_link_names: Vec<String>,
     pub inactive_joint_names: Vec<String>,
     pub mobile_base_mode: String, // static, floating, planar_translation, planar_rotation, planar_translation_and_rotation
+    pub mobile_base_bounds_filename: Option<String>,
     pub all_inactive_links: Vec<String>
 }
 
@@ -84,15 +88,15 @@ impl RobotConfigurationModule {
         let configuration_name = "baseconfig";
         let dead_end_link_names = Vec::new();
         let inactive_joint_names = Vec::new();
-        Self::new_manual_inputs(robot_name, configuration_name, dead_end_link_names, inactive_joint_names, "static".to_string())
+        Self::new_manual_inputs(robot_name, configuration_name, ImplicitDualQuaternion::new_identity(), dead_end_link_names, inactive_joint_names, "static".to_string(), None)
     }
 
-    pub fn new_manual_inputs(robot_name: &str, configuration_name: &str, dead_end_link_names: Vec<String>, inactive_joint_names: Vec<String>, mobile_base_mode: String) -> Self {
+    pub fn new_manual_inputs(robot_name: &str, configuration_name: &str, base_offset: ImplicitDualQuaternion, dead_end_link_names: Vec<String>, inactive_joint_names: Vec<String>, mobile_base_mode: String, mobile_base_bounds_filename: Option<String>) -> Self {
         let robot_model_module = RobotModelModule::new(robot_name);
         let all_inactive_links = Vec::new();
 
-        let mut out_self = Self { configuration_name: configuration_name.to_string(), robot_model_module,
-            dead_end_link_names, inactive_joint_names, mobile_base_mode, all_inactive_links};
+        let mut out_self = Self { configuration_name: configuration_name.to_string(), robot_model_module, base_offset,
+            dead_end_link_names, inactive_joint_names, mobile_base_mode, all_inactive_links, mobile_base_bounds_filename };
 
         out_self._adjust_model_module_based_on_mobile_base_mode();
         out_self._set_inactive_links();
@@ -129,9 +133,37 @@ impl RobotConfigurationModule {
             inactive_joint_names.push( inactive_joint_names_[i].as_str().unwrap().to_string() );
         }
 
-        mobile_base_mode = y1["mobile_base_mode"].as_str().unwrap().to_string();
+        mobile_base_mode = y1["mobile_base_mode"].as_str().expect("mobile_base_mode must be included in robot configuration yaml.").to_string();
 
-        return Ok(Self::new_manual_inputs(robot_name, configuration_name, dead_end_link_names, inactive_joint_names, mobile_base_mode));
+        let mut base_offset = ImplicitDualQuaternion::new_identity();
+
+        let mut mobile_base_bounds_filename = if y1["mobile_base_bounds_filename"] == Null { None } else { Some(y1["mobile_base_bounds_filename"].as_str().expect("mobile_base_bounds_filename must be included in robot configuration yaml.").to_string()) };
+
+        let mut base_posiition_offset_vec3 = Vector3::new(0.,0.,0.);
+        let base_position_offset = y1["base_position_offset"].as_vec().unwrap();
+        if base_position_offset.len() != 3 {
+            return Err(format!("base_position_offset ({:?}) must be a float vec of length 3", base_position_offset));
+        }
+        for i in 0..3 {
+            base_posiition_offset_vec3[i] = base_position_offset[i].as_f64().expect("base_position_offset has a value that is not f64.");
+        }
+        base_offset.translation = base_posiition_offset_vec3;
+        base_offset.set_is_identity();
+
+        let mut euler_angles = [0.,0.,0.];
+        let base_orientation_offset = y1["base_orientation_offset"].as_vec().unwrap();
+        if base_orientation_offset.len() != 3 {
+            return Err(format!("base_orientation_offset ({:?}) must be a float vec of length 3", base_orientation_offset));
+        }
+        for i in 0..3 {
+            euler_angles[i] = base_orientation_offset[i].as_f64().expect("base_orientation_offset has a value that is not f64.");
+        }
+        let mut q: UnitQuaternion<f64> = UnitQuaternion::from_euler_angles(euler_angles[0], euler_angles[1], euler_angles[2]);
+        base_offset.quat = q;
+        base_offset.set_is_identity();
+
+
+        return Ok(Self::new_manual_inputs(robot_name, configuration_name, base_offset, dead_end_link_names, inactive_joint_names, mobile_base_mode, mobile_base_bounds_filename));
     }
 
     fn _create_configuration_directory_with_example_if_need_be(robot_name: String) {
@@ -142,10 +174,19 @@ impl RobotConfigurationModule {
         out_string += "# dead_end_links: [\"dead_end_link_1\"] \n";
         out_string += "# inactive_joints: [\"inactive_joint_1\", \"inactive_joint_2\"] \n";
         out_string += "# mobile_base_mode: \"static\" \n";
-        out_string += "#    ^^(can be static, floating, translation, rotation, planar_translation, planar_rotation, planar_translation_and_rotation)\n\n";
+        out_string += "#    ^^(can be static, floating, translation, rotation, planar_translation, planar_rotation, planar_translation_and_rotation)\n";
+        out_string += "# mobile_base_bounds_filename: \n";
+        out_string += "#    ^^(can be left blank if no bounds should be placed on mobile base, or a name of a file in the mobile_base_bounds directory)\n";
+        out_string += "# base_position_offset: [0., 0., 0.] \n";
+        out_string += "#    ^^(represented in meters)\n";
+        out_string += "# base_orientation_offset: [0., 0., 0.] \n";
+        out_string += "#    ^^(Euler angles, represented in radians)\n\n";
         out_string += "dead_end_links: [] \n";
         out_string += "inactive_joints: [] \n";
-        out_string += "mobile_base_mode: \"static\" ";
+        out_string += "mobile_base_mode: \"static\" \n";
+        out_string += "mobile_base_bounds_filename: \"None\" \n";
+        out_string += "base_position_offset: [0., 0., 0.]\n";
+        out_string += "base_orientation_offset: [0., 0., 0.]\n";
 
         let partial_fp = "configurations".to_string();
         write_string_to_file_relative_to_robot_directory(robot_name.clone(), partial_fp.clone(), "sample_config.yaml".to_string(), out_string, true);
@@ -164,6 +205,7 @@ impl RobotConfigurationModule {
 
         let mut new_link = Link::new_without_urdf_link( new_link_idx, None, vec![world_link_idx], None, vec![ new_joint_idx ] );
         new_link.name = "world_link_preceding_mobile_base_joint".to_string();
+        new_link.is_mobile_base_link = true;
         let mut new_joint = Joint::new_without_urdf_joint( new_joint_idx, new_link_idx, world_link_idx );
         new_joint.name = "mobile_base_joint".to_string();
 

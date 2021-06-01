@@ -59,7 +59,7 @@ impl RobotDOFModule {
                 self._joint_idx_to_input_x_start_idx.push( count );
                 count += robot_configuration_module.robot_model_module.joints[i].num_dofs;
             } else {
-                self._joint_idx_to_input_x_start_idx.push( usize::max_value() );
+                self._joint_idx_to_input_x_start_idx.push( usize::MAX );
             }
         }
     }
@@ -88,7 +88,7 @@ impl RobotDOFModule {
         for i in 0..num_dofs {
             let (joint_idx, sub_idx) = self._input_x_idx_to_joint_idx_and_subidx[i];
             let num_translation_dofs = robot_configuration_module.robot_model_module.joints[joint_idx].dof_translation_axes.len();
-            let num_rotation_dofs = robot_configuration_module.robot_model_module.joints[joint_idx].dof_rotation_axes.len();
+            // let num_rotation_dofs = robot_configuration_module.robot_model_module.joints[joint_idx].dof_rotation_axes.len();
 
             if sub_idx >= num_translation_dofs {
                 let joint_type = "rotation".to_string();
@@ -114,6 +114,10 @@ impl RobotDOFModule {
 
     pub fn get_joint_idx_type_and_subidx_from_input_x_idx(&self, x_idx: usize) -> (usize, String, usize) {
         return self._input_x_idx_to_joint_idx_and_subidx_and_subjoint_type[x_idx].clone();
+    }
+
+    pub fn get_joints_copy_ref(&self) -> &Vec<Joint> {
+        return &self._joints_copy;
     }
 
     pub fn print_joint_dof_order(&self) {

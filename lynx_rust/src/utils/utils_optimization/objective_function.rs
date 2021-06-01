@@ -1,6 +1,6 @@
 use crate::utils::utils_vars::prelude::*;
 use crate::utils::utils_optimization::{loss_function::*, isolated_objective_term::*};
-use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
+use crate::robot_modules::robot::Robot;
 use crate::utils::utils_recorders::prelude::*;
 use nalgebra::{DVector};
 use termion::{color, style};

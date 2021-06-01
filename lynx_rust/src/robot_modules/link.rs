@@ -1,6 +1,7 @@
 use crate::utils::utils_parsing::urdf_link::*;
 use crate::utils::utils_se3::implicit_dual_quaternion::ImplicitDualQuaternion;
 use serde::{Serialize, Deserialize};
+use nalgebra::Vector3;
 
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -12,7 +13,8 @@ pub struct Link {
     pub children_link_idxs: Vec<usize>,
     pub preceding_joint_idx: Option<usize>,
     pub children_joint_idxs: Vec<usize>,
-    pub active: bool
+    pub active: bool,
+    pub is_mobile_base_link: bool
 }
 
 impl Link {
@@ -20,7 +22,7 @@ impl Link {
         let name = urdf_link.name.clone();
         let mut active = Self::_decide_on_active(&urdf_link);
 
-        Self { name, urdf_link, link_idx, preceding_link_idx, children_link_idxs, preceding_joint_idx, children_joint_idxs, active }
+        Self { name, urdf_link, link_idx, preceding_link_idx, children_link_idxs, preceding_joint_idx, children_joint_idxs, active, is_mobile_base_link: false }
     }
 
     pub fn new_without_urdf_link(link_idx: usize, preceding_link_idx: Option<usize>, children_link_idxs: Vec<usize>, preceding_joint_idx: Option<usize>, children_joint_idxs: Vec<usize>) -> Self {

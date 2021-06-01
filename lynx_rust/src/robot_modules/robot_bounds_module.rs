@@ -26,7 +26,7 @@ pub struct RobotBoundsModule {
 }
 
 impl RobotBoundsModule {
-    pub fn new(robot_configuration_module: &RobotConfigurationModule, robot_dof_module: &RobotDOFModule, mobile_base_bounds_filename: Option<&str>) -> Self {
+    pub fn new(robot_configuration_module: &RobotConfigurationModule, robot_dof_module: &RobotDOFModule) -> Self {
         let upper_bounds = Vec::new();
         let lower_bounds = Vec::new();
         let bounds = Vec::new();
@@ -40,6 +40,7 @@ impl RobotBoundsModule {
         out_self._create_mobile_base_bounds_folder_and_default_file_if_need_be(robot_configuration_module);
         out_self._set_bounds(robot_configuration_module, robot_dof_module);
         out_self._set_joint_names(robot_configuration_module);
+        let mobile_base_bounds_filename = robot_configuration_module.mobile_base_bounds_filename.clone();
         out_self.set_bounds_for_mobile_base_from_file(mobile_base_bounds_filename);
 
         return out_self;
@@ -50,8 +51,8 @@ impl RobotBoundsModule {
         for i in 0..l {
             let c = robot_dof_module.get_joint_idx_type_and_subidx_from_input_x_idx(i);
             let has_bounds = robot_configuration_module.robot_model_module.joints[c.0].urdf_joint.includes_limits;
-            let mut upper_bound = std::f64::INFINITY;
-            let mut lower_bound = -std::f64::INFINITY;
+            let mut upper_bound = f64::INFINITY;
+            let mut lower_bound = -f64::INFINITY;
 
             if has_bounds {
                 upper_bound = robot_configuration_module.robot_model_module.joints[c.0].urdf_joint.limits_upper;
@@ -142,10 +143,10 @@ impl RobotBoundsModule {
         }
     }
 
-    pub fn set_bounds_for_mobile_base_from_file(&mut self, mobile_base_bounds_filename: Option<&str>) -> Result<(), String> {
+    pub fn set_bounds_for_mobile_base_from_file(&mut self, mobile_base_bounds_filename: Option<String>) -> Result<(), String> {
         // do not need to put .yaml at the end of mobile base bounds filename
         let mut mobile_base_bounds_file_ = "default".to_string();
-        if mobile_base_bounds_filename.is_some() { mobile_base_bounds_file_ = mobile_base_bounds_filename.unwrap().to_string(); }
+        if mobile_base_bounds_filename.is_some() { mobile_base_bounds_file_ = mobile_base_bounds_filename.unwrap().clone() }
 
         let robot_name = self._robot_name_copy.clone();
         let fp = get_path_to_particular_robot_directory(robot_name.clone()) + "/mobile_base_bounds/" + mobile_base_bounds_file_.as_str() + ".yaml";
@@ -294,7 +295,7 @@ impl RobotBoundsModule {
     pub fn print_bounds(&self) {
         let l = self._bounds.len();
         for i in 0..l {
-            println!("{}{}joint dof {} ---> {} {} has lower bound {:?} and upper bound {:?}", style::Bold, color::Fg(color::Blue), i, style::Reset, self._joint_names[i], self._bounds[i].0, self._bounds[i].1);
+            println!("{}{}joint dof {} ---> {} has lower bound {:?} and upper bound {:?}", style::Bold, color::Fg(color::Blue), i, style::Reset, self._bounds[i].0, self._bounds[i].1);
         }
         println!()
     }
@@ -318,4 +319,14 @@ pub enum BoundsCheckResult {
     InBounds,
     OutOfBounds(String),
     Error(String)
+}
+
+impl BoundsCheckResult {
+    pub fn is_out_of_bounds(&self) -> bool {
+        return match self {
+            InBounds => { false }
+            OutOfBounds(_) => { true }
+            Error(_) => { false }
+        }
+    }
 }

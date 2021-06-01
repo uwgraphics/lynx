@@ -1,6 +1,7 @@
 use crate::utils::utils_vars::{lynx_vars::LynxVars, lynx_vars_parallel::LynxVarsParallel};
-use crate::robot_modules::robot_module_toolbox::RobotModuleToolbox;
+use crate::robot_modules::robot::Robot;
 use crate::robot_modules::robot_world::RobotWorld;
+use crate::robot_modules::prelude::RobotSet;
 use rayon::prelude::*;
 
 #[derive(Debug)]
@@ -19,29 +20,43 @@ impl<'a> LynxVarsGeneric<'a> {
         return LynxVarsGeneric::Parallel(LynxVarsParallel::new_empty(num_threads));
     }
 
-    pub fn new_empty_single_threaded_packaged_with_robot_module_toolbox(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
-        let robot_module_toolbox = RobotModuleToolbox::new(robot_name, configuration_name, mobile_base_bounds_filename)?;
+    pub fn new_single_threaded_packaged_with_robot(robot_name: &str, configuration_name: Option<&str>) -> Result<Self, String> {
+        let robot = Robot::new(robot_name, configuration_name)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_single_threaded();
-        set_or_add_lynx_var_generic!(&mut lynx_vars, RobotModuleToolbox, "robot_module_toolbox", robot_module_toolbox);
+        set_or_add_lynx_var_generic!(&mut lynx_vars, Robot, "robot", robot);
         return Ok(lynx_vars);
     }
 
-    pub fn new_empty_parallel_packaged_with_robot_module_toolbox(num_threads: Option<usize>, robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>) -> Result<Self, String> {
-        let robot_module_toolbox = RobotModuleToolbox::new(robot_name, configuration_name, mobile_base_bounds_filename)?;
+    pub fn new_parallel_packaged_with_robot(num_threads: Option<usize>, robot_name: &str, configuration_name: Option<&str>) -> Result<Self, String> {
+        let robot = Robot::new(robot_name, configuration_name)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_parallel(num_threads);
-        set_or_add_lynx_var_generic!(&mut lynx_vars, RobotModuleToolbox, "robot_module_toolbox", robot_module_toolbox);
+        set_or_add_lynx_var_generic!(&mut lynx_vars, Robot, "robot", robot);
         return Ok(lynx_vars);
     }
 
-    pub fn new_empty_single_threaded_packaged_with_robot_world(robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>, environment_name: Option<&str>) -> Result<Self, String> {
-        let robot_world = RobotWorld::new(robot_name, configuration_name, mobile_base_bounds_filename, environment_name)?;
+    pub fn new_single_threaded_packaged_with_robot_world(robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new(robot_names, configuration_names, environment_name)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_single_threaded();
         set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
         return Ok(lynx_vars);
     }
 
-    pub fn new_empty_parallel_packaged_with_robot_world(num_threads: Option<usize>, robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>, environment_name: Option<&str>) -> Result<Self, String> {
-        let robot_world = RobotWorld::new(robot_name, configuration_name, mobile_base_bounds_filename, environment_name)?;
+    pub fn new_parallel_packaged_with_robot_world(num_threads: Option<usize>, robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new(robot_names, configuration_names, environment_name)?;
+        let mut lynx_vars = LynxVarsGeneric::new_empty_parallel(num_threads);
+        set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
+        return Ok(lynx_vars);
+    }
+
+    pub fn new_single_threaded_packaged_with_robot_world_from_set_name(robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new_from_set_name(robot_set_name, environment_name)?;
+        let mut lynx_vars = LynxVarsGeneric::new_empty_single_threaded();
+        set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
+        return Ok(lynx_vars);
+    }
+
+    pub fn new_parallel_packaged_with_robot_world_from_set_name(num_threads: Option<usize>, robot_set_name: &str, environment_name: Option<&str>) -> Result<Self, String> {
+        let robot_world = RobotWorld::new_from_set_name(robot_set_name, environment_name)?;
         let mut lynx_vars = LynxVarsGeneric::new_empty_parallel(num_threads);
         set_or_add_lynx_var_generic!(&mut lynx_vars, RobotWorld, "robot_world", robot_world);
         return Ok(lynx_vars);
@@ -99,17 +114,17 @@ impl<'a> LynxVarsGeneric<'a> {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn get_robot_module_toolbox_ref(&self, name: Option<&str>) -> Result<&RobotModuleToolbox, String> {
+    pub fn get_robot_ref(&self, name: Option<&str>) -> Result<&Robot, String> {
         return match name {
-            None => { get_lynx_var_ref_generic!(self, RobotModuleToolbox, "robot_module_toolbox") }
-            Some(n) => { get_lynx_var_ref_generic!(self, RobotModuleToolbox, n) }
+            None => { get_lynx_var_ref_generic!(self, Robot, "robot_module_toolbox") }
+            Some(n) => { get_lynx_var_ref_generic!(self, Robot, n) }
         }
     }
 
-    pub fn get_robot_module_toolbox_mut_ref(&mut self, name: Option<&str>) -> Result<&mut RobotModuleToolbox, String> {
+    pub fn get_robot_mut_ref(&mut self, name: Option<&str>) -> Result<&mut Robot, String> {
         return match name {
-            None => { get_lynx_var_mut_ref_generic!(self, RobotModuleToolbox, "robot_module_toolbox") }
-            Some(n) => { get_lynx_var_mut_ref_generic!(self, RobotModuleToolbox, n) }
+            None => { get_lynx_var_mut_ref_generic!(self, Robot, "robot_module_toolbox") }
+            Some(n) => { get_lynx_var_mut_ref_generic!(self, Robot, n) }
         }
     }
 
@@ -125,6 +140,16 @@ impl<'a> LynxVarsGeneric<'a> {
             None => { get_lynx_var_mut_ref_generic!(self, RobotWorld, "robot_world") }
             Some(n) => { get_lynx_var_mut_ref_generic!(self, RobotWorld, n) }
         }
+    }
+
+    pub fn get_robot_set_ref_via_robot_world(&self, robot_world_name: Option<&str>) -> Result<&RobotSet, String> {
+        let robot_world = self.get_robot_world_ref(robot_world_name)?;
+        return Ok(robot_world.get_robot_set_ref());
+    }
+
+    pub fn get_robot_set_mut_ref_via_robot_world(&mut self, robot_world_name: Option<&str>) -> Result<&mut RobotSet, String> {
+        let robot_world = self.get_robot_world_mut_ref(robot_world_name)?;
+        return Ok(robot_world.get_robot_set_mut_ref());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

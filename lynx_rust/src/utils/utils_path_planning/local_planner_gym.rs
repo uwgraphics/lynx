@@ -35,10 +35,26 @@ impl<'a> LocalPlannerGym<'a> {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    pub fn set_robot_world(&mut self, robot_name: &str, configuration_name: Option<&str>, mobile_base_bounds_filename: Option<&str>, environment_name: Option<&str>) -> Result<(), String> {
-        let robot_world = RobotWorld::new(robot_name, configuration_name, mobile_base_bounds_filename, environment_name)?;
+    pub fn set_robot_world(&mut self, robot_names: Vec<&str>, configuration_names: Vec<Option<&str>>, environment_name: Option<&str>) -> Result<(), String> {
+        // let robot_world = RobotWorld::new(robot_name, configuration_name, mobile_base_bounds_filename, environment_name)?;
+        let robot_world = RobotWorld::new(robot_names, configuration_names, environment_name)?;
 
-        self._sampler = Some(robot_world.get_robot_module_toolbox_ref().get_bounds_module_ref().to_lynx_float_vec_sampler_box());
+        self._sampler = Some(robot_world.get_robot_set_ref().to_lynx_float_vec_sampler_box());
+        // self._sampler = Some(robot_world.get_robot_module_toolbox_ref().get_bounds_module_ref().to_lynx_float_vec_sampler_box());
+        self._collision_checker = Some(RobotWorldCollisionChecker.to_collision_checker_box());
+
+        set_or_add_lynx_var_generic!(&mut self._lynx_vars_parallel, RobotWorld, "robot_world", robot_world.clone());
+        set_or_add_lynx_var_generic!(&mut self._lynx_vars_single_threaded, RobotWorld, "robot_world", robot_world.clone());
+
+        Ok(())
+    }
+
+    pub fn set_robot_world_from_set_name(&mut self, robot_set_name: &str, environment_name: Option<&str>) -> Result<(), String> {
+        // let robot_world = RobotWorld::new(robot_name, configuration_name, mobile_base_bounds_filename, environment_name)?;
+        let robot_world = RobotWorld::new_from_set_name(robot_set_name, environment_name)?;
+
+        self._sampler = Some(robot_world.get_robot_set_ref().to_lynx_float_vec_sampler_box());
+        // self._sampler = Some(robot_world.get_robot_module_toolbox_ref().get_bounds_module_ref().to_lynx_float_vec_sampler_box());
         self._collision_checker = Some(RobotWorldCollisionChecker.to_collision_checker_box());
 
         set_or_add_lynx_var_generic!(&mut self._lynx_vars_parallel, RobotWorld, "robot_world", robot_world.clone());
