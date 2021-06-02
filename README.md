@@ -25,7 +25,7 @@ The following features will be available in our Lynx v0.2.0 release by July 1, 2
 <h1> Plans for v0.3.0 and Beyond </h1>
 
 * We plan to release ROS wrappers that will easily bridge the gap between Lynx and other robotics software stacks.  
-* We will continue to add more robot motion planning and optimization algorithms, e.g., Stampede (published at ICRA 2021) with corresponding apps within our graphics engine.
+* We will continue to add more robot motion planning and optimization algorithms, e.g., Stampede (published at ICRA 2019) with corresponding apps within our graphics engine.
 
 
 
