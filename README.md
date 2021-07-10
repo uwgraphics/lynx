@@ -10,12 +10,12 @@ Welcome to the Lynx Robotics Library!  The library will feature useful robotics 
 
 <h1> v0.1.0 Release Notes </h1>
 
-Lynx v0.1.0 provides some base features for robot modeling and planning.  The library is under heavy development, and many more features will be released in v0.2 by July 1 (outlined below).  If you would like to try out the library in its current state, refer to the Examples in lynx_rust/examples.
+Lynx v0.1.0 provides some base features for robot modeling and planning.  The library is under heavy development, and many more features will be released in v0.2 (outlined below).  If you would like to try out the library in its current state, refer to the Examples in lynx_rust/examples.
 
 
 <h1> Plans for v0.2.0 Release </h1>
 
-The following features will be available in our Lynx v0.2.0 release by July 1, 2021:
+The following features will be available in our Lynx v0.2.0 release by ~~July 1~~ August 1, 2021:
 
 * The library will feature a built-in graphics engine with physically-based lighting and rendering, making it easy to interface with many robots for planning and motion optimization.  A preview of this environment can be seen in images/lynx_preview.
 * Many more robotics algorithms will be implemented in the library, including RelaxedIK (published at RSS 2018), CollisionIK (published at ICRA 2021), and Strobe (published at ICRA 2021).   
