@@ -7,6 +7,9 @@
 
 Welcome to the Lynx Robotics Library!  The library will feature useful robotics applications, such as forward kinematics, inverse kinematics, path planning, trajectory optimization, and pathwise inverse kinematics.  It was designed to be general purpose and easy to set up, going straight from robot URDF to modeling, planning, and optimization within minutes.  
 
+<b>Development update:</b>
+Implementation of this library is paused due to unforeseen circumstances.  I will update here when development has resumed.  
+
 
 <h1> v0.1.0 Release Notes </h1>
 
@@ -15,7 +18,7 @@ Lynx v0.1.0 provides some base features for robot modeling and planning.  The li
 
 <h1> Plans for v0.2.0 Release </h1>
 
-The following features will be available in our Lynx v0.2.0 release by ~~July 1~~ August 1, 2021:
+The following features will be available in our Lynx v0.2.0 release:
 
 * The library will feature a built-in graphics engine with physically-based lighting and rendering, making it easy to interface with many robots for planning and motion optimization.  A preview of this environment can be seen in images/lynx_preview.
 * Many more robotics algorithms will be implemented in the library, including RelaxedIK (published at RSS 2018), CollisionIK (published at ICRA 2021), and Strobe (published at ICRA 2021).   
